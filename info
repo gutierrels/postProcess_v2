@@ -1,0 +1,25 @@
+100000000000           Counts
+4.80000E+00            Detector size in X axis (cm)
+4.80000E+00            Detector size in Y axis (cm)
+1.17000E+01            Distance between detectors (cm)
+8                      Modules per ring
+3                      Number of rings
+3.00000E-01            Distance between rings (cm)
+FDG                    Isotope name
+6586.26                Isotope half life (s) (F18: 6586.26)
+6.072650872059336e-6      Energy resolution (%)
+0.00002                   Position resolution (cm)
+5.0e-9                 Coincidence window
+50.0                   Energy window (%)
+300                    module reconstruction bins in X axis
+300                    module reconstruction bins in Y axis
+32                     detector pixels in X axis
+32                     detector pixels in Y axis
+1.0                    crystal depth (cm)
+7200                   Acquisition time (s)
+1                      Output format (0-> Bruker LM, 1-> Bruker LM only coincindences, 2-> Castor)
+2                      Coincidence method (0-> Greater energy, 1-> Closest time, 2-> Same history, 3-> Same history close to 511)
+0                      Projection Method (0-> None, 1-> Fit the detector, 2-> Extend Detector (discards coincidences falling outside))
+0                      Normalization Method (0-> None, 1-> Create, 2-> Apply)
+cnormAnode/cnorm.norm       Normalization filename (Only for normalization apply)
+0                      Attenuation correction method (0-> None, 1-> Cylinder)

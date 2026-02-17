@@ -1,0 +1,74 @@
+
+nRings=3
+modsPerRing=8
+nMod=nRings*modsPerRing
+nPairs=108
+nBinsX=300
+nBinsY=300
+
+set term png
+set key right bot
+
+## Modules ##
+
+# Summary
+set output "histM.png"
+set title "Module coincidences"
+plot "histM.dat" w l
+
+
+# Per ring
+do for [ir=0:nRings-1]{
+
+        firstMod = ir*modsPerRing    
+        lastMod = firstMod+modsPerRing-1
+	
+	set output "histXRing_".ir.".png"
+	set title "Module coincidences X positions in ring ".ir
+	set xrange[-1:nBinsX+1]
+	plot for [im=firstMod:lastMod] "histMx_".im.".dat" w l t "mod-".im
+
+        set output "histYRing_".ir.".png"
+        set title "Module coincidences Y positions in ring ".ir
+	set xrange[-1:nBinsY+1]
+        plot for [im=firstMod:lastMod] "histMy_".im.".dat" w l t "mod-".im
+
+}
+
+# Per module
+do for [im=0:nMod-1]{
+
+        set output "histXMod_".im.".png"
+        set title "Module ".im." coincidences X positions
+	set xrange[-1:nBinsX+1]
+        plot "histMx_".im.".dat" w l t ""
+
+        set output "histYMod_".im.".png"
+        set title "Module ".im." coincidences Y positions 
+	set xrange[-1:nBinsY+1]
+        plot "histMy_".im.".dat" w l t ""
+
+}
+
+
+
+## Pairs ##
+
+# Summary
+set output "histP.png"
+unset xrange
+unset title
+plot "histP.dat" w l t "Pairs coincidences"
+
+do for [ip=0:nPairs-1]{
+        set output "histXPair_".ip.".png"	
+        set title "Pair ".ip." coincidences X positions"
+	set xrange[-1:nBinsX+1]
+        plot "histPx_".ip."_1.dat" w l t "First module", "histPx_".ip."_2.dat" w l t "Second module"
+
+        set output "histYPair_".ip.".png"       
+        set title "Pair ".ip." coincidences Y positions"
+	set xrange[-1:nBinsY+1]
+        plot "histPy_".ip."_1.dat" w l t "First module", "histPy_".ip."_2.dat" w l t "Second module"
+
+}
