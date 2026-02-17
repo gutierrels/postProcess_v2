@@ -1,7 +1,7 @@
 100000000000           Counts
 2.42000E+00            Detector size in X axis (cm)
 5.06000E+00            Detector size in Y axis (cm)
-9.6                    Distance between detectors (cm)
+9.54                   Distance between detectors (cm)
 12                     Modules per ring
 3                      Number of rings
 2.20000E-01            Distance between rings (cm)
