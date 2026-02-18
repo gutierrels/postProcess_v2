@@ -1,0 +1,74 @@
+Initialization processing time: 3.500000E+01 s
+Thread 0: Starting simulation of source F18 with initial history 0 and seeds 1 1. Histories already simulated: 0. Remaining histories: 31250
+Thread 10: Starting simulation of source F18 with initial history 0 and seeds 918882992 858672133. Histories already simulated: 0. Remaining histories: 31250
+Thread 13: Starting simulation of source F18 with initial history 0 and seeds 1929580647 324681933. Histories already simulated: 0. Remaining histories: 31250
+Thread 22: Starting simulation of source F18 with initial history 0 and seeds 1056478052 1943244114. Histories already simulated: 0. Remaining histories: 31250
+Thread 9: Starting simulation of source F18 with initial history 0 and seeds 327796803 915478773. Histories already simulated: 0. Remaining histories: 31250
+Thread 4: Starting simulation of source F18 with initial history 0 and seeds 27944595 774572312. Histories already simulated: 0. Remaining histories: 31250
+Thread 27: Starting simulation of source F18 with initial history 0 and seeds 1709285619 1859376254. Histories already simulated: 0. Remaining histories: 31250
+Thread 2: Starting simulation of source F18 with initial history 0 and seeds 1993751964 753089694. Histories already simulated: 0. Remaining histories: 31250
+Thread 14: Starting simulation of source F18 with initial history 0 and seeds 2061216471 209323758. Histories already simulated: 0. Remaining histories: 31250
+Thread 1: Starting simulation of source F18 with initial history 0 and seeds 1088794366 722792456. Histories already simulated: 0. Remaining histories: 31250
+Thread 16: Starting simulation of source F18 with initial history 0 and seeds 2124896501 460463303. Histories already simulated: 0. Remaining histories: 31250
+Thread 12: Starting simulation of source F18 with initial history 0 and seeds 1155963390 704005330. Histories already simulated: 0. Remaining histories: 31250
+Thread 5: Starting simulation of source F18 with initial history 0 and seeds 1108394934 620441713. Histories already simulated: 0. Remaining histories: 31250
+Thread 7: Starting simulation of source F18 with initial history 0 and seeds 479095664 801971873. Histories already simulated: 0. Remaining histories: 31250
+Thread 8: Starting simulation of source F18 with initial history 0 and seeds 204282520 1624172377. Histories already simulated: 0. Remaining histories: 31250
+Thread 23: Starting simulation of source F18 with initial history 0 and seeds 1628262065 782316895. Histories already simulated: 0. Remaining histories: 31250
+Thread 3: Starting simulation of source F18 with initial history 0 and seeds 610005387 1748134360. Histories already simulated: 0. Remaining histories: 31250
+Thread 24: Starting simulation of source F18 with initial history 0 and seeds 1368245324 2070604605. Histories already simulated: 0. Remaining histories: 31250
+Thread 20: Starting simulation of source F18 with initial history 0 and seeds 2069007070 1309916099. Histories already simulated: 0. Remaining histories: 31250
+Thread 17: Starting simulation of source F18 with initial history 0 and seeds 233299547 2134948096. Histories already simulated: 0. Remaining histories: 31250
+Thread 30: Starting simulation of source F18 with initial history 0 and seeds 944675654 1438406465. Histories already simulated: 0. Remaining histories: 31250
+Thread 6: Starting simulation of source F18 with initial history 0 and seeds 580582953 73753031. Histories already simulated: 0. Remaining histories: 31250
+Thread 21: Starting simulation of source F18 with initial history 0 and seeds 1905029285 1817420725. Histories already simulated: 0. Remaining histories: 31250
+Thread 28: Starting simulation of source F18 with initial history 0 and seeds 1363836736 433738184. Histories already simulated: 0. Remaining histories: 31250
+Thread 11: Starting simulation of source F18 with initial history 0 and seeds 210516912 158496513. Histories already simulated: 0. Remaining histories: 31250
+Thread 18: Starting simulation of source F18 with initial history 0 and seeds 1675549170 1144329343. Histories already simulated: 0. Remaining histories: 31250
+Thread 19: Starting simulation of source F18 with initial history 0 and seeds 1421385813 672532778. Histories already simulated: 0. Remaining histories: 31250
+Thread 31: Starting simulation of source F18 with initial history 0 and seeds 733913518 219173860. Histories already simulated: 0. Remaining histories: 31250
+Thread 15: Starting simulation of source F18 with initial history 0 and seeds 1963942692 1686825906. Histories already simulated: 0. Remaining histories: 31250
+Thread 25: Starting simulation of source F18 with initial history 0 and seeds 414218397 519652740. Histories already simulated: 0. Remaining histories: 31250
+Thread 26: Starting simulation of source F18 with initial history 0 and seeds 1032135553 1729805542. Histories already simulated: 0. Remaining histories: 31250
+Thread 29: Starting simulation of source F18 with initial history 0 and seeds 1307886537 1841770585. Histories already simulated: 0. Remaining histories: 31250
+Thread 4: Source F18: Simulation finished at history 31250 with 31250/31250 histories simulated and 1324466444 1589422256 as final seeds. Total time: 5
+Thread 22: Source F18: Simulation finished at history 31250 with 31250/31250 histories simulated and 1659368450 1927442848 as final seeds. Total time: 5
+Thread 2: Source F18: Simulation finished at history 31250 with 31250/31250 histories simulated and 178345302 910158663 as final seeds. Total time: 5
+Thread 14: Source F18: Simulation finished at history 31250 with 31250/31250 histories simulated and 1930292237 59762965 as final seeds. Total time: 5
+Thread 9: Source F18: Simulation finished at history 31250 with 31250/31250 histories simulated and 731083714 365181545 as final seeds. Total time: 5
+Thread 0: Source F18: Simulation finished at history 31250 with 31250/31250 histories simulated and 1616627041 223174589 as final seeds. Total time: 5
+Thread 1: Source F18: Simulation finished at history 31250 with 31250/31250 histories simulated and 1065658794 1543522855 as final seeds. Total time: 5
+Thread 20: Source F18: Simulation finished at history 31250 with 31250/31250 histories simulated and 259309439 136255230 as final seeds. Total time: 5
+Thread 5: Source F18: Simulation finished at history 31250 with 31250/31250 histories simulated and 875101102 1724651175 as final seeds. Total time: 5
+Thread 16: Source F18: Simulation finished at history 31250 with 31250/31250 histories simulated and 336980995 748635093 as final seeds. Total time: 5
+Thread 3: Source F18: Simulation finished at history 31250 with 31250/31250 histories simulated and 1562285872 2007904258 as final seeds. Total time: 5
+Thread 23: Source F18: Simulation finished at history 31250 with 31250/31250 histories simulated and 1772231274 1230022740 as final seeds. Total time: 5
+Thread 6: Source F18: Simulation finished at history 31250 with 31250/31250 histories simulated and 1213771406 381199043 as final seeds. Total time: 5
+Thread 27: Source F18: Simulation finished at history 31250 with 31250/31250 histories simulated and 1183894475 979985053 as final seeds. Total time: 5
+Thread 19: Source F18: Simulation finished at history 31250 with 31250/31250 histories simulated and 1204051858 699042276 as final seeds. Total time: 5
+Thread 17: Source F18: Simulation finished at history 31250 with 31250/31250 histories simulated and 42358390 103074928 as final seeds. Total time: 5
+Thread 8: Source F18: Simulation finished at history 31250 with 31250/31250 histories simulated and 1981492011 1485838982 as final seeds. Total time: 5
+Thread 13: Source F18: Simulation finished at history 31250 with 31250/31250 histories simulated and 1134093533 25351657 as final seeds. Total time: 5
+Thread 25: Source F18: Simulation finished at history 31250 with 31250/31250 histories simulated and 825978694 291650195 as final seeds. Total time: 5
+Thread 12: Source F18: Simulation finished at history 31250 with 31250/31250 histories simulated and 1937451399 433635896 as final seeds. Total time: 5
+Thread 10: Source F18: Simulation finished at history 31250 with 31250/31250 histories simulated and 1000962805 1655734191 as final seeds. Total time: 5
+Thread 15: Source F18: Simulation finished at history 31250 with 31250/31250 histories simulated and 879101155 845226029 as final seeds. Total time: 5
+Thread 30: Source F18: Simulation finished at history 31250 with 31250/31250 histories simulated and 2111654764 987280049 as final seeds. Total time: 5
+Thread 28: Source F18: Simulation finished at history 31250 with 31250/31250 histories simulated and 2008793219 1696048890 as final seeds. Total time: 5
+Thread 24: Source F18: Simulation finished at history 31250 with 31250/31250 histories simulated and 378370569 1545765861 as final seeds. Total time: 5
+Thread 21: Source F18: Simulation finished at history 31250 with 31250/31250 histories simulated and 1390529820 327928953 as final seeds. Total time: 5
+Thread 18: Source F18: Simulation finished at history 31250 with 31250/31250 histories simulated and 1178842291 1617128051 as final seeds. Total time: 5
+Thread 11: Source F18: Simulation finished at history 31250 with 31250/31250 histories simulated and 25974278 1519645518 as final seeds. Total time: 5
+Thread 7: Source F18: Simulation finished at history 31250 with 31250/31250 histories simulated and 612777772 293878945 as final seeds. Total time: 5
+Thread 31: Source F18: Simulation finished at history 31250 with 31250/31250 histories simulated and 85837579 47784334 as final seeds. Total time: 5
+Thread 29: Source F18: Simulation finished at history 31250 with 31250/31250 histories simulated and 1973086320 736391003 as final seeds. Total time: 5
+Thread 26: Source F18: Simulation finished at history 31250 with 31250/31250 histories simulated and 507137766 778742611 as final seeds. Total time: 5
+Simulation finished, starting results reduce step
+
+
+Simulated histories:              1000000
+Simulation real time:   1.2000E+01 s
+Simulation user time:   1.6398E+02 s
+Histories per second and thread:   6.0983E+03
+Histories per second:   1.9515E+05
+Results processing time:   3.0748E-01 s
