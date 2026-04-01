@@ -13,6 +13,7 @@ int main(int argc, char **argv) {
          static_cast<unsigned long>(sizeof(LMHeader)));
   printf("Coincidence size: %lu\n",
          static_cast<unsigned long>(sizeof(coincidence)));
+  printf("Single size     : %lu\n", static_cast<unsigned long>(sizeof(single)));
 
   // ** Detector information ** //
 
@@ -49,6 +50,7 @@ int main(int argc, char **argv) {
   unsigned attenuationMethod = ATTENUATION_METHOD::CYLINDER;
 
   std::string normFilename;
+  std::string pairListFilename;
 
   double maxTimestamp = 0.0;
 
@@ -216,6 +218,10 @@ int main(int argc, char **argv) {
     attenuationMethod = ATTENUATION_METHOD::NONE;
   }
 
+  // Detector list filename
+  infoS >> pairListFilename;
+  infoS.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
   if (!infoS) {
     printf("Corrupted information file '%s'\n", argv[1]);
     return -2;
@@ -277,6 +283,10 @@ int main(int argc, char **argv) {
   // Tallies
   unsigned long nCoincidences = 0;
   unsigned long nSingles = 0;
+  unsigned long nRandoms = 0;
+  unsigned long nTriples = 0;
+  unsigned long nQuadruples = 0;
+  unsigned long nQuintuplesOrMore = 0;
 
   // Create random gaussian distributions
   std::random_device rd{};
@@ -310,13 +320,16 @@ int main(int argc, char **argv) {
 
   header.print();
 
-  // + Read detector pair indexes
+  // Read detector pair indexes
   std::vector<detPair> pairIndexes;
-  FILE *fdetPair = fopen("detectorList.txt", "r");
+  FILE *fdetPair = fopen(pairListFilename.c_str(), "r");
   if (fdetPair == nullptr) {
-    printf("Unable to open detector pair list file 'detectorList.txt'\n");
+    printf("Unable to open detector pair list file '%s'\n",
+           pairListFilename.c_str());
     return -2;
   }
+
+  printf("Reading detector pair list file '%s'\n", pairListFilename.c_str());
 
   char line[100];
   unsigned iline = 0;
@@ -324,14 +337,15 @@ int main(int argc, char **argv) {
     ++iline;
     unsigned a, b;
     if (sscanf(line, "%*u %u %u", &a, &b) != 2) {
-      printf("Corrupted detector pair file 'detectorList.txt'. "
+      printf("Corrupted detector pair file '%s'. "
              "Check line %u: %s\n",
-             iline, line);
+             pairListFilename.c_str(), iline, line);
       return -2;
     }
     pairIndexes.emplace_back(a, b);
   }
   fclose(fdetPair);
+  printf("Loaded %lu detector pairs\n", pairIndexes.size());
 
   // Create the LM file to be filled
   FILE *fLM;
@@ -410,6 +424,7 @@ int main(int argc, char **argv) {
 
   // Reserve histogram memory
   std::vector<unsigned> histP(pairIndexes.size(), 0);
+  std::vector<unsigned> histR(pairIndexes.size(), 0);
   std::vector<unsigned> histPx(pairIndexes.size() * nBinsX * 2, 0);
   std::vector<unsigned> histPy(pairIndexes.size() * nBinsY * 2, 0);
   std::vector<unsigned> histM(totalMods, 0);
@@ -511,6 +526,15 @@ int main(int argc, char **argv) {
 
     // Sort new singles
     std::sort(nextSingles.begin(), nextSingles.end());
+
+    // Count multiples in the coincidence window
+    if (nextSingles.size() == 3) {
+      ++nTriples;
+    } else if (nextSingles.size() == 4) {
+      ++nQuadruples;
+    } else if (nextSingles.size() >= 5) {
+      ++nQuintuplesOrMore;
+    }
 
     // Get first single history number
     unsigned long long hist = nextSingles[0].hist;
@@ -700,6 +724,12 @@ int main(int argc, char **argv) {
         // It is a confirmed coincidence
         acceptedCoincidence = true;
         ++nCoincidences;
+
+        // Check if it is a random coincidence
+        if (nextSingles[0].hist != nextSingles[iCoincidence].hist) {
+          ++nRandoms;
+          ++histR[iPair];
+        }
 
         maxTimestamp = std::max(maxTimestamp, nextSingles[0].t);
         maxTimestamp = std::max(maxTimestamp, nextSingles[iCoincidence].t);
@@ -1001,6 +1031,10 @@ int main(int argc, char **argv) {
   printf("Required iterations to process all files: %lu\n", iterations);
   printf("Number of coincidences: %lu\n", nCoincidences);
   printf("Number of singles     : %lu\n", nSingles);
+  printf("Number of randoms     : %lu\n", nRandoms);
+  printf("Number of triples     : %lu\n", nTriples);
+  printf("Number of quadruples  : %lu\n", nQuadruples);
+  printf("Number of 5+ multiples: %lu\n", nQuintuplesOrMore);
 
   if (outputFormat != OUTPUT_FORMAT::CASTOR) {
     fclose(fLM);
@@ -1009,6 +1043,14 @@ int main(int argc, char **argv) {
     FILE *fout = fopen("modules/histP.dat", "w");
     if (fout != nullptr) {
       for (unsigned v : histP)
+        fprintf(fout, "%u\n", v);
+      fclose(fout);
+    }
+
+    // Write Randoms per pair histogram
+    fout = fopen("modules/histR.dat", "w");
+    if (fout != nullptr) {
+      for (unsigned v : histR)
         fprintf(fout, "%u\n", v);
       fclose(fout);
     }
