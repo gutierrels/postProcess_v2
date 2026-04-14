@@ -222,11 +222,36 @@ int main(int argc, char **argv) {
   infoS >> pairListFilename;
   infoS.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
+  // Use logical detectors
+  unsigned useLogicalDetectors = 0;
+  infoS >> auxInt;
+  infoS.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+  useLogicalDetectors = (auxInt == 1) ? 1 : 0;
+
+  // Number of logical rings
+  unsigned nLogicalRings = 0;
+  infoS >> nLogicalRings;
+  infoS.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
+  // Discard multiples
+  unsigned discardMultiples = 0;
+  infoS >> discardMultiples;
+  infoS.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
   if (!infoS) {
     printf("Corrupted information file '%s'\n", argv[1]);
     return -2;
   }
   infoS.close();
+
+  if (useLogicalDetectors) {
+    printf("Logical detectors enabled with %u logical rings\n", nLogicalRings);
+    if (outputFormat == OUTPUT_FORMAT::CASTOR) {
+      printf(
+          "Error: Logical detectors are not compatible with CASTOR format\n");
+      return -2;
+    }
+  }
 
   double lambda = log(2) / header.isotopeHalfLife;
   double n0 = static_cast<double>(nCounts) / exp(-lambda * header.acqTime);
@@ -250,18 +275,62 @@ int main(int argc, char **argv) {
   header.method = 6;
   header.StudyID = 1;
 
-  const double detectorSizeX = header.detectorSizeX;
-  const double detectorSizeY = header.detectorSizeY;
-  const double detectorSizeX05 = header.detectorSizeX / 2.0;
-  const double detectorSizeY05 = header.detectorSizeY / 2.0;
-  const double dBinSizeX = header.detectorSizeX / static_cast<double>(nBinsX);
-  const double dBinSizeY = header.detectorSizeY / static_cast<double>(nBinsY);
-  const double dBinSizeNormX =
-      header.detectorSizeX / static_cast<double>(nBinsNormX);
-  const double dBinSizeNormY =
-      header.detectorSizeY / static_cast<double>(nBinsNormY);
-  const double ringRad = header.detectorDistance / 2.0;
-  const double ringDistance = header.ringDistance;
+  // Physical detector dimensions (always needed)
+  const double physicalDetectorSizeX = header.detectorSizeX;
+  const double physicalDetectorSizeY = header.detectorSizeY;
+  const double physicalRingRad = header.detectorDistance / 2.0;
+  const double physicalRingDistance = header.ringDistance;
+  const unsigned nPhysicalRings = header.ringNumber;
+  const unsigned modPerRing = header.moduleNumber;
+
+  // Working detector dimensions (overwritten if logical mode)
+  double detectorSizeX = physicalDetectorSizeX;
+  double detectorSizeY = physicalDetectorSizeY;
+  double ringRad = physicalRingRad;
+  double ringDistance = physicalRingDistance;
+  unsigned nRings = nPhysicalRings;
+
+  // Logical detector geometry
+  double logicalDetectorSizeY = 0.0; // Needed for toLogical()
+  if (useLogicalDetectors) {
+    const double scannerLength = physicalDetectorSizeY * nPhysicalRings +
+                                 physicalRingDistance * nPhysicalRings;
+
+    printf("Scanner length: %f cm (Contando medio gap arriba y medio abajo)\n",
+           scannerLength);
+
+    logicalDetectorSizeY = scannerLength / static_cast<double>(nLogicalRings);
+    const double logicalDetectorSizeX = logicalDetectorSizeY;
+
+    printf("Physical detector size X: %f cm\n", physicalDetectorSizeX);
+    printf("Physical detector size Y: %f cm\n", physicalDetectorSizeY);
+    printf("Physical detector rings: %u\n", nPhysicalRings);
+    printf("-------------------------------------\n");
+    printf("Logical detector size X: %f cm\n", logicalDetectorSizeX);
+    printf("Logical detector size Y: %f cm\n", logicalDetectorSizeY);
+    printf("Logical detector rings: %u\n", nLogicalRings);
+    printf("-------------------------------------\n");
+
+    // Override working dimensions
+    detectorSizeX = logicalDetectorSizeX;
+    detectorSizeY = logicalDetectorSizeY;
+    ringRad = physicalRingRad;
+    ringDistance = 0.0;
+    nRings = nLogicalRings;
+
+    // Override header for LM output
+    header.detectorSizeX = logicalDetectorSizeX;
+    header.detectorSizeY = logicalDetectorSizeY;
+    header.ringDistance = 0.0;
+    header.ringNumber = nLogicalRings;
+  }
+
+  const double detectorSizeX05 = detectorSizeX / 2.0;
+  const double detectorSizeY05 = detectorSizeY / 2.0;
+  const double dBinSizeX = detectorSizeX / static_cast<double>(nBinsX);
+  const double dBinSizeY = detectorSizeY / static_cast<double>(nBinsY);
+  const double dBinSizeNormX = detectorSizeX / static_cast<double>(nBinsNormX);
+  const double dBinSizeNormY = detectorSizeY / static_cast<double>(nBinsNormY);
 
   // Convert distances to mm
   header.detectorSizeX *= 10.0;
@@ -269,9 +338,8 @@ int main(int argc, char **argv) {
   header.detectorDistance *= 10.0;
   header.ringDistance *= 10.0;
 
-  const unsigned nRings = header.ringNumber;
-  const unsigned modPerRing = header.moduleNumber;
-  const unsigned totalMods = header.moduleNumber * header.ringNumber;
+  const unsigned totalMods = modPerRing * nRings;
+  const unsigned nPhysicalTotalMods = modPerRing * nPhysicalRings;
 
   //****************************//
 
@@ -296,9 +364,22 @@ int main(int argc, char **argv) {
   std::normal_distribution pBlur{0.0, pRes};
 
   // + Create transformations for each module and ring
+
+  // Physical Dz (always needed, used for toLogical in logical mode)
+  std::vector<double> physicalDz(nPhysicalRings);
+  for (unsigned iRing = 0; iRing < nPhysicalRings; ++iRing) {
+    physicalDz[iRing] = iRing * (physicalRingDistance + physicalDetectorSizeY);
+  }
+
+  // Working Dz (logical or physical depending on mode)
   std::vector<double> Dz(nRings);
-  for (unsigned iRing = 0; iRing < nRings; ++iRing) {
-    Dz[iRing] = iRing * (ringDistance + detectorSizeY);
+  if (useLogicalDetectors) {
+    for (unsigned iRing = 0; iRing < nRings; ++iRing) {
+      Dz[iRing] = iRing * (ringDistance +
+                           detectorSizeY); // ringDistance=0 in logical mode
+    }
+  } else {
+    Dz = physicalDz;
   }
 
   std::vector<std::array<double, 9>> Rz(modPerRing);
@@ -370,8 +451,8 @@ int main(int argc, char **argv) {
   }
 
   // Open all module files
-  std::vector<std::uintmax_t> fileSizes(totalMods);
-  std::vector<FILE *> fmods(totalMods);
+  std::vector<std::uintmax_t> fileSizes(nPhysicalTotalMods);
+  std::vector<FILE *> fmods(nPhysicalTotalMods);
   for (size_t i = 0; i < fmods.size(); ++i) {
 
     std::string dataFilename(argv[2]);
@@ -394,8 +475,16 @@ int main(int argc, char **argv) {
     int err = noInTimeSingles[i].readPenRed(fmods[i], i, emin, emax, eRes,
                                             normDist, gen);
     if (err != 0) {
-      printf("Error: Empty or corrupted module file (%d)\n", i);
+      printf("Error: Empty or corrupted module file (%zu)\n", i);
       return -3;
+    }
+  }
+
+  // Convert initial singles to logical if needed
+  if (useLogicalDetectors) {
+    for (size_t i = 0; i < fmods.size(); i++) {
+      toLogical(noInTimeSingles[i], modPerRing, logicalDetectorSizeY, Rz,
+                physicalDz);
     }
   }
 
@@ -409,17 +498,23 @@ int main(int argc, char **argv) {
 
   // Read the next single to replace it
   unsigned firstSingleMod = firstSingleIt->module;
-  int errRead = firstSingleIt->readPenRed(fmods[firstSingleMod], firstSingleMod,
-                                          emin, emax, eRes, normDist, gen);
+  unsigned fileIndex = useLogicalDetectors
+                           ? static_cast<unsigned>(std::distance(
+                                 noInTimeSingles.begin(), firstSingleIt))
+                           : firstSingleMod;
+  int errRead = firstSingleIt->readPenRed(fmods[fileIndex], fileIndex, emin,
+                                          emax, eRes, normDist, gen);
   if (errRead != 0) {
     if (errRead == 1) {
       // End of file
-      fclose(fmods[firstSingleMod]);
-      fmods[firstSingleMod] = nullptr;
+      fclose(fmods[fileIndex]);
+      fmods[fileIndex] = nullptr;
     } else {
       // Corrupted file
       return -4;
     }
+  } else if (useLogicalDetectors) {
+    toLogical(*firstSingleIt, modPerRing, logicalDetectorSizeY, Rz, physicalDz);
   }
 
   // Reserve histogram memory
@@ -500,6 +595,9 @@ int main(int argc, char **argv) {
             // Corrupted file
             return -4;
           }
+        } else if (useLogicalDetectors) {
+          toLogical(noInTimeSingles[i], modPerRing, logicalDetectorSizeY, Rz,
+                    physicalDz);
         }
       }
     }
@@ -516,11 +614,11 @@ int main(int argc, char **argv) {
              nextSingles[2].stringify().c_str(),
              nextSingles[3].stringify().c_str(),
              nextSingles[4].stringify().c_str(),
-             nextSingles[nSing].stringify().c_str(),
-             nextSingles[nSing - 1].stringify().c_str(),
-             nextSingles[nSing - 2].stringify().c_str(),
+             nextSingles[nSing - 5].stringify().c_str(),
+             nextSingles[nSing - 4].stringify().c_str(),
              nextSingles[nSing - 3].stringify().c_str(),
-             nextSingles[nSing - 4].stringify().c_str());
+             nextSingles[nSing - 2].stringify().c_str(),
+             nextSingles[nSing - 1].stringify().c_str());
       return -1;
     }
 
@@ -536,6 +634,14 @@ int main(int argc, char **argv) {
       ++nQuintuplesOrMore;
     }
 
+    if ((discardMultiples == 1 && nextSingles.size() == 3) ||
+        (discardMultiples == 2 && nextSingles.size() >= 3)) {
+      // Keep only the first single so it is processed as a non-coincidence
+      // (single) through the normal flow. Erasing all and using continue
+      // would leave the vector empty, causing a SEGFAULT at nextSingles[0].t.
+      nextSingles.resize(1);
+    }
+
     // Get first single history number
     unsigned long long hist = nextSingles[0].hist;
 
@@ -544,14 +650,19 @@ int main(int argc, char **argv) {
     double d511 = 1.0e35;
     unsigned iCoincidence = 0;
     unsigned iPair = pairIndexes.size();
-    unsigned nextSingDevMod = sim2devModule(modPerRing, nextSingles[0].module);
+    unsigned nextSingDevMod =
+        useLogicalDetectors ? nextSingles[0].module
+                            : sim2devModule(modPerRing, nextSingles[0].module);
     unsigned localPair;
     switch (coinMethod) {
     case COINCIDENCE_METHOD::TAKE_WINNER_IF_ALL_ARE_GOODS:
       for (size_t i = 1; i < nextSingles.size(); ++i) {
         // Get pair
-        localPair = getPair(pairIndexes, nextSingDevMod,
-                            sim2devModule(modPerRing, nextSingles[i].module));
+        localPair =
+            getPair(pairIndexes, nextSingDevMod,
+                    useLogicalDetectors
+                        ? nextSingles[i].module
+                        : sim2devModule(modPerRing, nextSingles[i].module));
         if (localPair >= pairIndexes.size())
           continue;
 
@@ -566,8 +677,11 @@ int main(int argc, char **argv) {
     case COINCIDENCE_METHOD::TAKE_SAME_HISTORY:
       for (size_t i = 1; i < nextSingles.size(); ++i) {
         // Get pair
-        localPair = getPair(pairIndexes, nextSingDevMod,
-                            sim2devModule(modPerRing, nextSingles[i].module));
+        localPair =
+            getPair(pairIndexes, nextSingDevMod,
+                    useLogicalDetectors
+                        ? nextSingles[i].module
+                        : sim2devModule(modPerRing, nextSingles[i].module));
         if (localPair >= pairIndexes.size())
           continue;
 
@@ -582,8 +696,11 @@ int main(int argc, char **argv) {
     case COINCIDENCE_METHOD::TAKE_SAME_HISTORY_511:
       for (size_t i = 1; i < nextSingles.size(); ++i) {
         // Get pair
-        localPair = getPair(pairIndexes, nextSingDevMod,
-                            sim2devModule(modPerRing, nextSingles[i].module));
+        localPair =
+            getPair(pairIndexes, nextSingDevMod,
+                    useLogicalDetectors
+                        ? nextSingles[i].module
+                        : sim2devModule(modPerRing, nextSingles[i].module));
         if (localPair >= pairIndexes.size())
           continue;
 
@@ -600,8 +717,11 @@ int main(int argc, char **argv) {
     default:
       for (size_t i = 1; i < nextSingles.size(); ++i) {
         // Get pair
-        localPair = getPair(pairIndexes, nextSingDevMod,
-                            sim2devModule(modPerRing, nextSingles[i].module));
+        localPair =
+            getPair(pairIndexes, nextSingDevMod,
+                    useLogicalDetectors
+                        ? nextSingles[i].module
+                        : sim2devModule(modPerRing, nextSingles[i].module));
         if (localPair >= pairIndexes.size())
           continue;
 
@@ -792,7 +912,9 @@ int main(int argc, char **argv) {
           // Check which pulse go first
           unsigned normBin1X, normBin1Y, normBin2X, normBin2Y;
           if (pairIndexes[iPair].a ==
-              sim2devModule(modPerRing, nextSingles[0].module)) {
+              (useLogicalDetectors
+                   ? nextSingles[0].module
+                   : sim2devModule(modPerRing, nextSingles[0].module))) {
             c.energy1 = nextSingles[0].e;
             c.xPosition1 = static_cast<unsigned short>(p1[0] / dBinSizeX);
             c.yPosition1 = static_cast<unsigned short>(p1[1] / dBinSizeY);
@@ -981,19 +1103,25 @@ int main(int argc, char **argv) {
 
       // Read the next single to replace it
       firstSingleMod = firstSingleIt->module;
-      if (fmods[firstSingleMod] != nullptr) {
-        errRead =
-            firstSingleIt->readPenRed(fmods[firstSingleMod], firstSingleMod,
-                                      emin, emax, eRes, normDist, gen);
+      fileIndex = useLogicalDetectors
+                      ? static_cast<unsigned>(std::distance(
+                            noInTimeSingles.begin(), firstSingleIt))
+                      : firstSingleMod;
+      if (fmods[fileIndex] != nullptr) {
+        errRead = firstSingleIt->readPenRed(fmods[fileIndex], fileIndex, emin,
+                                            emax, eRes, normDist, gen);
         if (errRead != 0) {
           if (errRead == 1) {
             // End of file
-            fclose(fmods[firstSingleMod]);
-            fmods[firstSingleMod] = nullptr;
+            fclose(fmods[fileIndex]);
+            fmods[fileIndex] = nullptr;
           } else {
             // Corrupted file
             return -4;
           }
+        } else if (useLogicalDetectors) {
+          toLogical(*firstSingleIt, modPerRing, logicalDetectorSizeY, Rz,
+                    physicalDz);
         }
       }
     }
@@ -1005,7 +1133,7 @@ int main(int argc, char **argv) {
       std::string progressSstring;
       for (size_t im = 0; im < fmods.size(); ++im) {
         char prefix[20];
-        snprintf(prefix, 100, " Module %4d", im + 1);
+        snprintf(prefix, 100, " Module %4zu", im + 1);
         progressSstring +=
             stringifyFileProgress(fmods[im], fileSizes[im], prefix);
       }
@@ -1023,7 +1151,7 @@ int main(int argc, char **argv) {
   std::string progressSstring;
   for (size_t im = 0; im < fmods.size(); ++im) {
     char prefix[20];
-    snprintf(prefix, 100, " Module %4d", im + 1);
+    snprintf(prefix, 100, " Module %4zu", im + 1);
     progressSstring += stringifyFileProgress(fmods[im], fileSizes[im], prefix);
   }
   std::cout << progressSstring << warnings << "\n";

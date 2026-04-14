@@ -470,4 +470,22 @@ double attenuationFactorWithAir(const std::array<double, 3> &p1,
                                 const std::array<double, 3> &cylinder_origin,
                                 double radius, double height);
 
+inline void toLogical(single &s, const unsigned modPerRing,
+                      const double logicalDetSizeY,
+                      const std::vector<std::array<double, 9>> &Rz,
+                      const std::vector<double> &Dz) {
+
+  unsigned physRing = s.module / modPerRing;
+  unsigned modInRing = s.module % modPerRing;
+
+  double p[3] = {s.x, s.y, s.z};
+  matmul3D(Rz[modInRing].data(), p); // Rotar al módulo 0
+  p[2] -= Dz[physRing];              // Quitar traslación axial del anillo
+
+  bool isUpper = (p[2] >= logicalDetSizeY);
+
+  unsigned logRing = physRing * 2 + (isUpper ? 1 : 0);
+  s.module = logRing * modPerRing + modInRing;
+}
+
 #endif

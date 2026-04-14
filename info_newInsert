@@ -1,4 +1,4 @@
-37000000                      Counts
+1000000                     Counts
 2.42000E+00               Detector size in X axis (cm)
 5.06000E+00               Detector size in Y axis (cm)
 9.54                      Distance between detectors (cm)
@@ -10,17 +10,20 @@ FDG                       Isotope name
 15.0		              Energy resolution (%)
 0.11                       Position resolution (cm)
 1.0e-9                    Coincidence window
-30.0                      Energy window (%)
+50.0                      Energy window (%)
 300                       module reconstruction bins in X axis
 300                       module reconstruction bins in Y axis
 24                        detector pixels in X axis
 24                        detector pixels in Y axis
 1.2                       crystal depth (cm)
-1                         Acquisition time (s)
+7200                         Acquisition time (s)
 1                         Output format (0-> Bruker LM, 1-> Bruker LM only coincindences, 2-> Castor)
 1                         Coincidence method (0-> Greater energy, 1-> Closest time, 2-> Same history, 3-> Same history close to 511)
 1                         Projection Method (0-> None, 1-> Fit the detector, 2-> Extend Detector (discards coincidences falling outside))
 0                         Normalization Method (0-> None, 1-> Create, 2-> Apply)
 cnormAnode/cnorm.norm     Normalization filename (Only for normalization apply)
 0                            Attenuation correction method (0-> None, 1-> Cylinder)
-pairListInsertHw.txt      Detector pair indexes list filename
+detectorListInsert12x6.txt      Detector pair indexes list filename
+1                         Use logical detectors (0-> No, 1-> Yes)
+6                         Number of logical rings (only used if logical detectors enabled)
+2                         Discard multiples (0-> No, 1-> only triples, 2 -> all multiples)
