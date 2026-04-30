@@ -146,7 +146,7 @@ struct single {
   }
 
   inline int readPenRed(FILE *f, const unsigned m, const double emin,
-                        const double emax, const double eRes,
+                        const double emax, const double eRes, const double tRes,
                         std::normal_distribution<double> &normDist,
                         std::mt19937 &gen) {
     // Reset time
@@ -197,6 +197,12 @@ struct single {
       double sigma = e * eRes / 2.355;
       double normVal = normDist(gen);
       e += sigma * normVal;
+
+      // Apply time bluring
+      if (tRes > 0.0) {
+        double sigma_t = tRes / 2.355;
+        t += sigma_t * normDist(gen);
+      }
     }
 
     // Convert energy to keV
