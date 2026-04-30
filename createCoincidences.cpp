@@ -580,6 +580,7 @@ int main(int argc, char **argv) {
     // Get the initial window time
     double initTime = nextSingles[0].t;
     double endTime = initTime + coincidenceWindow;
+    double timeMargin = (tRes > 0.0) ? (5.0 * tRes / 2.355) : 0.0; // 5 sigma
 
     // Check if all singles have been processed
     if (initTime > 1.0e20)
@@ -587,7 +588,7 @@ int main(int argc, char **argv) {
 
     // Read all singles within time window
     for (size_t i = 0; i < fmods.size(); ++i) {
-      while (noInTimeSingles[i].t < endTime) {
+      while (noInTimeSingles[i].t < endTime + timeMargin) {
         nextSingles.push_back(noInTimeSingles[i]);
         errRead = noInTimeSingles[i].readPenRed(fmods[i], i, emin, emax, eRes,
                                                 tRes, normDist, gen);
@@ -630,21 +631,33 @@ int main(int argc, char **argv) {
     // Sort new singles
     std::sort(nextSingles.begin(), nextSingles.end());
 
+    // Count actual singles within the coincidence window
+    // We must recalculate the true window end time because sorting may have brought an older event to the front
+    double trueEndTime = nextSingles[0].t + coincidenceWindow;
+    size_t windowSingles = 0;
+    for (size_t i = 0; i < nextSingles.size(); ++i) {
+      if (nextSingles[i].t < trueEndTime) {
+        ++windowSingles;
+      } else {
+        break; // Since it's sorted, we can stop
+      }
+    }
+
     // Count multiples in the coincidence window
-    if (nextSingles.size() == 3) {
+    if (windowSingles == 3) {
       ++nTriples;
-    } else if (nextSingles.size() == 4) {
+    } else if (windowSingles == 4) {
       ++nQuadruples;
-    } else if (nextSingles.size() >= 5) {
+    } else if (windowSingles >= 5) {
       ++nQuintuplesOrMore;
     }
 
-    if ((discardMultiples == 1 && nextSingles.size() == 3) ||
-        (discardMultiples == 2 && nextSingles.size() >= 3)) {
-      // Keep only the first single so it is processed as a non-coincidence
-      // (single) through the normal flow. Erasing all and using continue
-      // would leave the vector empty, causing a SEGFAULT at nextSingles[0].t.
-      nextSingles.resize(1);
+    if ((discardMultiples == 1 && windowSingles == 3) ||
+        (discardMultiples == 2 && windowSingles >= 3)) {
+      // Keep only the first single so it is processed as a non-coincidence.
+      // Erase the other singles in this coincidence window, but preserve future events.
+      nextSingles.erase(nextSingles.begin() + 1, nextSingles.begin() + windowSingles);
+      windowSingles = 1; // Update windowSingles since we removed the multiples
     }
 
     // Get first single history number
@@ -661,7 +674,7 @@ int main(int argc, char **argv) {
     unsigned localPair;
     switch (coinMethod) {
     case COINCIDENCE_METHOD::TAKE_WINNER_IF_ALL_ARE_GOODS:
-      for (size_t i = 1; i < nextSingles.size(); ++i) {
+      for (size_t i = 1; i < windowSingles; ++i) {
         // Get pair
         localPair =
             getPair(pairIndexes, nextSingDevMod,
@@ -680,7 +693,7 @@ int main(int argc, char **argv) {
       }
       break;
     case COINCIDENCE_METHOD::TAKE_SAME_HISTORY:
-      for (size_t i = 1; i < nextSingles.size(); ++i) {
+      for (size_t i = 1; i < windowSingles; ++i) {
         // Get pair
         localPair =
             getPair(pairIndexes, nextSingDevMod,
@@ -699,7 +712,7 @@ int main(int argc, char **argv) {
       }
       break;
     case COINCIDENCE_METHOD::TAKE_SAME_HISTORY_511:
-      for (size_t i = 1; i < nextSingles.size(); ++i) {
+      for (size_t i = 1; i < windowSingles; ++i) {
         // Get pair
         localPair =
             getPair(pairIndexes, nextSingDevMod,
@@ -720,7 +733,7 @@ int main(int argc, char **argv) {
       break;
     case COINCIDENCE_METHOD::TAKE_CLOSEST:
     default:
-      for (size_t i = 1; i < nextSingles.size(); ++i) {
+      for (size_t i = 1; i < windowSingles; ++i) {
         // Get pair
         localPair =
             getPair(pairIndexes, nextSingDevMod,
