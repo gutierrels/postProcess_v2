@@ -20,7 +20,7 @@ FDG                       Isotope name
 7200                         Acquisition time (s)
 1                         Output format (0-> Bruker LM, 1-> Bruker LM only coincindences, 2-> Castor)
 1                         Coincidence method (0-> Greater energy, 1-> Closest time, 2-> Same history, 3-> Same history close to 511)
-1                         Projection Method (0-> None, 1-> Fit the detector, 2-> Extend Detector (discards coincidences falling outside))
+0                         Projection Method (0-> None, 1-> Fit the detector, 2-> Extend Detector (discards coincidences falling outside))
 0                         Normalization Method (0-> None, 1-> Create, 2-> Apply)
 cnormAnode/cnorm.norm     Normalization filename (Only for normalization apply)
 0                            Attenuation correction method (0-> None, 1-> Cylinder)
