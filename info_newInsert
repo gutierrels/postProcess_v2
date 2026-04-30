@@ -9,7 +9,8 @@ FDG                       Isotope name
 6586.26                   Isotope half life (s) (F18: 6586.26)
 15.0		              Energy resolution (%)
 0.11                       Position resolution (cm)
-1.0e-9                    Coincidence window
+500.0e-12                 Time resolution (s)
+1.0e-9                    Coincidence window (s)
 50.0                      Energy window (%)
 300                       module reconstruction bins in X axis
 300                       module reconstruction bins in Y axis

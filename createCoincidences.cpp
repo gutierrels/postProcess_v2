@@ -29,6 +29,7 @@ int main(int argc, char **argv) {
 
   double eRes;
   double pRes; // cm
+  double tRes; // s
 
   double coincidenceWindow; // s
   double energyWindow;      // %
@@ -97,6 +98,10 @@ int main(int argc, char **argv) {
 
   // Position resolution (cm)
   infoS >> pRes;
+  infoS.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
+  // Time resolution (s)
+  infoS >> tRes;
   infoS.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
   // Coincidence window (s)
@@ -361,7 +366,7 @@ int main(int argc, char **argv) {
   std::mt19937 gen{rd()};
 
   std::normal_distribution normDist{0.0, 1.0};
-  std::normal_distribution pBlur{0.0, pRes};
+  std::normal_distribution pBlur{0.0, pRes / 2.355}; // FWHM to sigma
 
   // + Create transformations for each module and ring
 
@@ -472,7 +477,7 @@ int main(int argc, char **argv) {
   // Read first singles in data files
   std::vector<single> noInTimeSingles(fmods.size());
   for (size_t i = 0; i < fmods.size(); ++i) {
-    int err = noInTimeSingles[i].readPenRed(fmods[i], i, emin, emax, eRes,
+    int err = noInTimeSingles[i].readPenRed(fmods[i], i, emin, emax, eRes, tRes,
                                             normDist, gen);
     if (err != 0) {
       printf("Error: Empty or corrupted module file (%zu)\n", i);
@@ -503,7 +508,7 @@ int main(int argc, char **argv) {
                                  noInTimeSingles.begin(), firstSingleIt))
                            : firstSingleMod;
   int errRead = firstSingleIt->readPenRed(fmods[fileIndex], fileIndex, emin,
-                                          emax, eRes, normDist, gen);
+                                          emax, eRes, tRes, normDist, gen);
   if (errRead != 0) {
     if (errRead == 1) {
       // End of file
@@ -585,7 +590,7 @@ int main(int argc, char **argv) {
       while (noInTimeSingles[i].t < endTime) {
         nextSingles.push_back(noInTimeSingles[i]);
         errRead = noInTimeSingles[i].readPenRed(fmods[i], i, emin, emax, eRes,
-                                                normDist, gen);
+                                                tRes, normDist, gen);
         if (errRead != 0) {
           if (errRead == 1) {
             // End of file
@@ -1109,7 +1114,7 @@ int main(int argc, char **argv) {
                       : firstSingleMod;
       if (fmods[fileIndex] != nullptr) {
         errRead = firstSingleIt->readPenRed(fmods[fileIndex], fileIndex, emin,
-                                            emax, eRes, normDist, gen);
+                                            emax, eRes, tRes, normDist, gen);
         if (errRead != 0) {
           if (errRead == 1) {
             // End of file
