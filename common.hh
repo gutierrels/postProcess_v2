@@ -202,6 +202,8 @@ struct single {
       if (tRes > 0.0) {
         double sigma_t = tRes / 2.355;
         t += sigma_t * normDist(gen);
+        if (t < 0.0)
+          t = 0.0;
       }
     }
 
