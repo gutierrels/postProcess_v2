@@ -59,6 +59,13 @@ enum NORMALIZATION_METHOD : unsigned {
 };
 }
 
+namespace GENERATE_HISTOGRAM {
+enum GENERATE_HISTOGRAM : unsigned {
+  NONE = 0,
+  LOR_INDEX,
+};
+}
+
 inline unsigned sim2devModule(const unsigned ringModules, const unsigned imod) {
   const unsigned iRing = imod / ringModules;
   return iRing * ringModules + ((imod + (ringModules - 2)) % ringModules);

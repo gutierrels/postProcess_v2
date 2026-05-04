@@ -49,6 +49,7 @@ int main(int argc, char **argv) {
   unsigned coinMethod;
   unsigned normMethod;
   unsigned attenuationMethod = ATTENUATION_METHOD::CYLINDER;
+  unsigned generateHistogram;
 
   std::string normFilename;
   std::string pairListFilename;
@@ -242,6 +243,15 @@ int main(int argc, char **argv) {
   unsigned discardMultiples = 0;
   infoS >> discardMultiples;
   infoS.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
+  // Generate histogram
+  infoS >> auxInt;
+  switch (auxInt) {
+  case GENERATE_HISTOGRAM::NONE:
+    generateHistogram = GENERATE_HISTOGRAM::NONE;
+  case GENERATE_HISTOGRAM::LOR_INDEX:
+    generateHistogram = GENERATE_HISTOGRAM::LOR_INDEX;
+  }
 
   if (!infoS) {
     printf("Corrupted information file '%s'\n", argv[1]);
@@ -632,7 +642,8 @@ int main(int argc, char **argv) {
     std::sort(nextSingles.begin(), nextSingles.end());
 
     // Count actual singles within the coincidence window
-    // We must recalculate the true window end time because sorting may have brought an older event to the front
+    // We must recalculate the true window end time because sorting may have
+    // brought an older event to the front
     double trueEndTime = nextSingles[0].t + coincidenceWindow;
     size_t windowSingles = 0;
     for (size_t i = 0; i < nextSingles.size(); ++i) {
@@ -655,8 +666,10 @@ int main(int argc, char **argv) {
     if ((discardMultiples == 1 && windowSingles == 3) ||
         (discardMultiples == 2 && windowSingles >= 3)) {
       // Keep only the first single so it is processed as a non-coincidence.
-      // Erase the other singles in this coincidence window, but preserve future events.
-      nextSingles.erase(nextSingles.begin() + 1, nextSingles.begin() + windowSingles);
+      // Erase the other singles in this coincidence window, but preserve future
+      // events.
+      nextSingles.erase(nextSingles.begin() + 1,
+                        nextSingles.begin() + windowSingles);
       windowSingles = 1; // Update windowSingles since we removed the multiples
     }
 
