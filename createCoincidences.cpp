@@ -1,7 +1,7 @@
 
 
 #include "common.hh"
-#include <cstddef>
+#include <cstdio>
 
 int main(int argc, char **argv) {
 
@@ -51,6 +51,7 @@ int main(int argc, char **argv) {
   unsigned normMethod;
   unsigned attenuationMethod = ATTENUATION_METHOD::CYLINDER;
   unsigned generateHistogram;
+  unsigned N;
 
   std::string normFilename;
   std::string pairListFilename;
@@ -250,8 +251,10 @@ int main(int argc, char **argv) {
   switch (auxInt) {
   case GENERATE_HISTOGRAM::NONE:
     generateHistogram = GENERATE_HISTOGRAM::NONE;
+    break;
   case GENERATE_HISTOGRAM::LOR_INDEX:
     generateHistogram = GENERATE_HISTOGRAM::LOR_INDEX;
+    break;
   }
 
   if (!infoS) {
@@ -371,6 +374,14 @@ int main(int argc, char **argv) {
   unsigned long nTriples = 0;
   unsigned long nQuadruples = 0;
   unsigned long nQuintuplesOrMore = 0;
+
+  if (nBinsNormX == nBinsNormY) {
+    N = nBinsNormX;
+  } else {
+    printf("Not square detectors: '%u' and '%u' pixels\n", nBinsNormX,
+           nBinsNormY);
+    return -2;
+  }
 
   // Create random gaussian distributions
   std::random_device rd{};
@@ -541,6 +552,8 @@ int main(int argc, char **argv) {
   std::vector<unsigned> histM(totalMods, 0);
   std::vector<unsigned> histMx(totalMods * nBinsX, 0);
   std::vector<unsigned> histMy(totalMods * nBinsY, 0);
+  std::vector<unsigned> histLOR(N * N * N * N * pairIndexes.size(), 0);
+
   const size_t nBinsE = 300;
   const double de = (emax - emin) / static_cast<double>(nBinsE);
   const double dekeV = de / 1.0e3;
@@ -1017,6 +1030,10 @@ int main(int argc, char **argv) {
               (normBin1Y * nBinsNormX + normBin1X) * nBinsNormX * nBinsNormY;
           histNorm[pairFirstIndex + binFirstIndex + normBin2Y * nBinsNormX +
                    normBin2X] += 1.0;
+
+          lorIdx = normBin1X + normBin1Y * N + normBin2X * N * N +
+                   normBin2Y * N * N * N + c.pair * N * N * N * N;
+          ++histLOR[lorIdx];
         }
 
         ++histM[nextSingles[0].module];
@@ -1054,8 +1071,6 @@ int main(int argc, char **argv) {
       // Erase used singles
       nextSingles.erase(nextSingles.begin() + iCoincidence);
       nextSingles.erase(nextSingles.begin());
-
-      lorIdx = c.xPosition1 + c.yPosition1 *
 
     } else {
       // No coincidence detected for this single
@@ -1266,6 +1281,11 @@ int main(int argc, char **argv) {
         fclose(fout);
       }
     }
+
+    // Write LOR histogram
+
+    fout = fopen("LORhist.dat", "wb");
+    fwrite(histLOR.data(), sizeof(float), histLOR.size(), fout);
 
     // Normalize to the highest central LOR value
     float histNormFactor = 1.0;
