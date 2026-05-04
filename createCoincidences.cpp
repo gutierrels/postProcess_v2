@@ -1,6 +1,7 @@
 
 
 #include "common.hh"
+#include <cstddef>
 
 int main(int argc, char **argv) {
 
@@ -774,6 +775,9 @@ int main(int argc, char **argv) {
     // Flag if a coincidence has been accepted
     bool acceptedCoincidence = false;
 
+    // LOR index for histogram
+    size_t lorIdx;
+
     // Check if some other single is in energy window to create a coincidence
     if (iCoincidence > 0) {
 
@@ -1050,6 +1054,8 @@ int main(int argc, char **argv) {
       // Erase used singles
       nextSingles.erase(nextSingles.begin() + iCoincidence);
       nextSingles.erase(nextSingles.begin());
+
+      lorIdx = c.xPosition1 + c.yPosition1 *
 
     } else {
       // No coincidence detected for this single
