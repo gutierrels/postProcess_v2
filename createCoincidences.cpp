@@ -1,7 +1,6 @@
 
 
 #include "common.hh"
-#include <cstdio>
 
 int main(int argc, char **argv) {
 
