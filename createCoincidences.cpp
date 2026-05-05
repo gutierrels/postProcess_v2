@@ -1,6 +1,7 @@
 
 
 #include "common.hh"
+#include <cstdio>
 
 int main(int argc, char **argv) {
 
@@ -49,6 +50,8 @@ int main(int argc, char **argv) {
   unsigned coinMethod;
   unsigned normMethod;
   unsigned attenuationMethod = ATTENUATION_METHOD::CYLINDER;
+  unsigned generateHistogram;
+  unsigned N;
 
   std::string normFilename;
   std::string pairListFilename;
@@ -243,6 +246,17 @@ int main(int argc, char **argv) {
   infoS >> discardMultiples;
   infoS.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
+  // Generate histogram
+  infoS >> auxInt;
+  switch (auxInt) {
+  case GENERATE_HISTOGRAM::NONE:
+    generateHistogram = GENERATE_HISTOGRAM::NONE;
+    break;
+  case GENERATE_HISTOGRAM::LOR_INDEX:
+    generateHistogram = GENERATE_HISTOGRAM::LOR_INDEX;
+    break;
+  }
+
   if (!infoS) {
     printf("Corrupted information file '%s'\n", argv[1]);
     return -2;
@@ -360,6 +374,14 @@ int main(int argc, char **argv) {
   unsigned long nTriples = 0;
   unsigned long nQuadruples = 0;
   unsigned long nQuintuplesOrMore = 0;
+
+  if (nBinsNormX == nBinsNormY) {
+    N = nBinsNormX;
+  } else {
+    printf("Not square detectors: '%u' and '%u' pixels\n", nBinsNormX,
+           nBinsNormY);
+    return -2;
+  }
 
   // Create random gaussian distributions
   std::random_device rd{};
@@ -530,6 +552,8 @@ int main(int argc, char **argv) {
   std::vector<unsigned> histM(totalMods, 0);
   std::vector<unsigned> histMx(totalMods * nBinsX, 0);
   std::vector<unsigned> histMy(totalMods * nBinsY, 0);
+  std::vector<float> histLOR(N * N * N * N * pairIndexes.size(), 0);
+
   const size_t nBinsE = 300;
   const double de = (emax - emin) / static_cast<double>(nBinsE);
   const double dekeV = de / 1.0e3;
@@ -632,7 +656,8 @@ int main(int argc, char **argv) {
     std::sort(nextSingles.begin(), nextSingles.end());
 
     // Count actual singles within the coincidence window
-    // We must recalculate the true window end time because sorting may have brought an older event to the front
+    // We must recalculate the true window end time because sorting may have
+    // brought an older event to the front
     double trueEndTime = nextSingles[0].t + coincidenceWindow;
     size_t windowSingles = 0;
     for (size_t i = 0; i < nextSingles.size(); ++i) {
@@ -655,8 +680,10 @@ int main(int argc, char **argv) {
     if ((discardMultiples == 1 && windowSingles == 3) ||
         (discardMultiples == 2 && windowSingles >= 3)) {
       // Keep only the first single so it is processed as a non-coincidence.
-      // Erase the other singles in this coincidence window, but preserve future events.
-      nextSingles.erase(nextSingles.begin() + 1, nextSingles.begin() + windowSingles);
+      // Erase the other singles in this coincidence window, but preserve future
+      // events.
+      nextSingles.erase(nextSingles.begin() + 1,
+                        nextSingles.begin() + windowSingles);
       windowSingles = 1; // Update windowSingles since we removed the multiples
     }
 
@@ -760,6 +787,9 @@ int main(int argc, char **argv) {
 
     // Flag if a coincidence has been accepted
     bool acceptedCoincidence = false;
+
+    // LOR index for histogram
+    size_t lorIdx;
 
     // Check if some other single is in energy window to create a coincidence
     if (iCoincidence > 0) {
@@ -1000,6 +1030,10 @@ int main(int argc, char **argv) {
               (normBin1Y * nBinsNormX + normBin1X) * nBinsNormX * nBinsNormY;
           histNorm[pairFirstIndex + binFirstIndex + normBin2Y * nBinsNormX +
                    normBin2X] += 1.0;
+
+          lorIdx = normBin1X + normBin1Y * N + normBin2X * N * N +
+                   normBin2Y * N * N * N + c.pair * N * N * N * N;
+          ++histLOR[lorIdx];
         }
 
         ++histM[nextSingles[0].module];
@@ -1247,6 +1281,12 @@ int main(int argc, char **argv) {
         fclose(fout);
       }
     }
+
+    // Write LOR histogram
+
+    fout = fopen("LOR.hist", "wb");
+    fwrite(histLOR.data(), sizeof(float), histLOR.size(), fout);
+    fclose(fout);
 
     // Normalize to the highest central LOR value
     float histNormFactor = 1.0;

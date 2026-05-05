@@ -5,8 +5,8 @@
 12                        Modules per ring
 3                         Number of rings
 2.20000E-01               Distance between rings (cm)
-FDG                       Isotope name
-6586.26                   Isotope half life (s) (F18: 6586.26)
+Na22                      Isotope name
+1100000                   Isotope half life (s) (F18: 6586.26)
 15.0		              Energy resolution (%)
 0.11                       Position resolution (cm)
 500.0e-12                 Time resolution (s)
@@ -28,3 +28,4 @@ detectorListInsert12x6.txt     Detector pair indexes list filename
 1                         Use logical detectors (0-> No, 1-> Yes)
 6                         Number of logical rings (only used if logical detectors enabled)
 0                         Discard multiples (0-> No, 1-> only triples, 2 -> all multiples)
+1                           Generate histogram (0 -> No, 1 -> LOR index)
