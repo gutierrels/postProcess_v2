@@ -552,7 +552,7 @@ int main(int argc, char **argv) {
   std::vector<unsigned> histM(totalMods, 0);
   std::vector<unsigned> histMx(totalMods * nBinsX, 0);
   std::vector<unsigned> histMy(totalMods * nBinsY, 0);
-  std::vector<unsigned> histLOR(N * N * N * N * pairIndexes.size(), 0);
+  std::vector<float> histLOR(N * N * N * N * pairIndexes.size(), 0);
 
   const size_t nBinsE = 300;
   const double de = (emax - emin) / static_cast<double>(nBinsE);
@@ -1284,8 +1284,9 @@ int main(int argc, char **argv) {
 
     // Write LOR histogram
 
-    fout = fopen("LORhist.dat", "wb");
+    fout = fopen("LOR.hist", "wb");
     fwrite(histLOR.data(), sizeof(float), histLOR.size(), fout);
+    fclose(fout);
 
     // Normalize to the highest central LOR value
     float histNormFactor = 1.0;
