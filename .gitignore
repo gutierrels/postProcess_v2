@@ -1,6 +1,7 @@
 modules/
 singles/
 *.lm
-measure.dat
+*.dat
 penred2Coincidence
 info*
+*.hist
