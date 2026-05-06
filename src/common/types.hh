@@ -62,17 +62,24 @@ inline unsigned sim2devModule(const unsigned ringModules, const unsigned imod) {
 
 struct single {
 
+  // PenRed Save Flags Configuration
+  // Adjust these to match tallies/singles/save/* in your PenRed config
+  static constexpr bool saveWeight = false;
+  static constexpr bool saveMetadata = false;
+  static constexpr bool saveHistory = true;
+
   static constexpr const size_t bufferSize =
       5 * sizeof(float) + sizeof(double) + 3 * sizeof(uint8_t) +
       sizeof(unsigned long long);
 
   float e, x, y, z;
   double t;
+  double true_t;
   std::array<uint8_t, 3> info;
   unsigned long long hist;
   unsigned module;
 
-  single() : t(1.0e35) {}
+  single() : t(1.0e35), true_t(1.0e35) {}
 
   inline int readPenRed(FILE *f, const unsigned m, const double emin,
                         const double emax, const double eRes, const double tRes,
@@ -80,6 +87,7 @@ struct single {
                         std::mt19937 &gen) {
     // Reset time
     t = 1.0e35;
+    true_t = 1.0e35;
     // Reset energy
     e = -1.0;
     // Set module
@@ -93,34 +101,42 @@ struct single {
 
         size_t pos = 0;
 
-        memcpy(&e, buffer, sizeof(float));
+        memcpy(&e, buffer + pos, sizeof(float));
         pos += sizeof(float);
         memcpy(&x, buffer + pos, sizeof(float));
         pos += sizeof(float);
-
         memcpy(&y, buffer + pos, sizeof(float));
         pos += sizeof(float);
-
         memcpy(&z, buffer + pos, sizeof(float));
         pos += sizeof(float);
 
-        // Skip weight
-        // memcpy(&w, buffer+pos, sizeof(float));
-        // pos += sizeof(float);
+        if constexpr (saveWeight) {
+          // If you ever need to store weight in the struct, do it here
+          // memcpy(&w, buffer + pos, sizeof(float));
+          pos += sizeof(float);
+        }
 
         memcpy(&t, buffer + pos, sizeof(double));
         pos += sizeof(double);
 
-        // memcpy(info.data(), buffer+pos, 3*sizeof(uint8_t));
-        // pos += 3*sizeof(uint8_t);
+        if constexpr (saveMetadata) {
+          memcpy(info.data(), buffer + pos, 3 * sizeof(uint8_t));
+          pos += 3 * sizeof(uint8_t);
+        }
 
-        memcpy(&hist, buffer + pos, sizeof(unsigned long long));
+        if constexpr (saveHistory) {
+          memcpy(&hist, buffer + pos, sizeof(unsigned long long));
+          pos += sizeof(unsigned long long);
+        }
       } else {
         // printf("End of file reached\n");
         // fflush(stdout);
         t = 1.0e35;
+        true_t = 1.0e35;
         return 1;
       }
+
+      true_t = t;
 
       // Apply energy bluring
       double sigma = e * eRes / 2.355;

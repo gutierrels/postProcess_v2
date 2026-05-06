@@ -17,7 +17,7 @@ Na22                      Isotope name
 24                        detector pixels in X axis
 24                        detector pixels in Y axis
 1.2                       crystal depth (cm)
-7200                         Acquisition time (s)
+1                         Acquisition time (s)
 1                         Output format (0-> Bruker LM, 1-> Bruker LM only coincindences)
 1                         Coincidence method (0-> Greater energy, 1-> Closest time, 2-> Same history, 3-> Same history close to 511)
 0                         Projection Method (0-> None, 1-> Fit the detector, 2-> Extend Detector (discards coincidences falling outside))

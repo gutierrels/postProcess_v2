@@ -30,24 +30,34 @@ CoincidenceEngine::findCoincidence(const std::vector<single> &window,
   unsigned localPair;
 
   switch (coinMethod) {
-  case COINCIDENCE_METHOD::TAKE_WINNER_IF_ALL_ARE_GOODS:
+  case COINCIDENCE_METHOD::TAKE_WINNER_IF_ALL_ARE_GOODS: {
+    bool allGood = true;
     for (size_t i = 1; i < windowSize; ++i) {
-      // Get pair
       localPair = getPair(
           pairIndexes, nextSingDevMod,
           useLogicalDetectors ? window[i].module
                               : sim2devModule(modPerRing, window[i].module));
-      if (localPair >= pairIndexes.size())
-        continue;
+      if (localPair >= pairIndexes.size()) {
+        allGood = false;
+        break;
+      }
+    }
 
-      // Check if can be considered as the next coincidence
-      if (emaxSingle < window[i].e) {
-        emaxSingle = window[i].e;
-        result.iCoincidence = i;
-        result.iPair = localPair;
+    if (allGood) {
+      for (size_t i = 1; i < windowSize; ++i) {
+        localPair = getPair(
+            pairIndexes, nextSingDevMod,
+            useLogicalDetectors ? window[i].module
+                                : sim2devModule(modPerRing, window[i].module));
+        if (emaxSingle < window[i].e) {
+          emaxSingle = window[i].e;
+          result.iCoincidence = i;
+          result.iPair = localPair;
+        }
       }
     }
     break;
+  }
   case COINCIDENCE_METHOD::TAKE_SAME_HISTORY:
     for (size_t i = 1; i < windowSize; ++i) {
       // Get pair

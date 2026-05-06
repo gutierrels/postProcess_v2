@@ -97,7 +97,7 @@ single SinglesReader::seedFirst() {
 void SinglesReader::fillWindow(std::vector<single> &nextSingles, double endTime,
                                double timeMargin) {
   for (size_t i = 0; i < fmods.size(); ++i) {
-    while (noInTimeSingles[i].t < endTime + timeMargin) {
+    while (noInTimeSingles[i].true_t < endTime + timeMargin) {
       nextSingles.push_back(noInTimeSingles[i]);
       readNext(i);
     }

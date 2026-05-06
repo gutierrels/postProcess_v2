@@ -62,6 +62,7 @@ int main(int argc, char **argv) {
     double endTime = initTime + cfg.coincidenceWindow;
     double timeMargin = (cfg.tRes > 0.0) ? (5.0 * cfg.tRes / 2.355) : 0.0;
 
+    size_t oldSize = window.size();
     reader.fillWindow(window, endTime, timeMargin);
 
     if (window.size() > 10000) {
@@ -82,7 +83,10 @@ int main(int argc, char **argv) {
       return -1;
     }
 
-    std::sort(window.begin(), window.end());
+    if (window.size() > oldSize) {
+      std::sort(window.begin() + oldSize, window.end());
+      std::inplace_merge(window.begin(), window.begin() + oldSize, window.end());
+    }
 
     double trueEndTime = window[0].t + cfg.coincidenceWindow;
     size_t windowSingles = 0;
@@ -325,6 +329,7 @@ int main(int argc, char **argv) {
       std::cout << reader.progressString()
                 << "Simultaneous processing singles: " << window.size() << "\n"
                 << warnings << "\n";
+      warnings.clear();
     }
     ++iterations;
   }
