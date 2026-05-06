@@ -22,6 +22,10 @@ add_executable(penred2Coincidence
 
 target_include_directories(penred2Coincidence PRIVATE src)
 
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9.0)
+    target_link_libraries(penred2Coincidence PRIVATE stdc++fs)
+endif()
+
 # Optional: Add release optimization flags if compiling in Release mode
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
     target_compile_options(penred2Coincidence PRIVATE -O3 -march=native)
