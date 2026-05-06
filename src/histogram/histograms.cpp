@@ -26,34 +26,18 @@ HistogramSet::HistogramSet(const SimConfig &cfg, const DetectorGeometry &geo,
   nBinsZ = 10;
   dz = cfg.detectorDepth / static_cast<double>(nBinsZ);
   histMez.resize(nBinsZ * geo.totalMods * nBinsE, 0);
-
-  histNormPairSize =
-      cfg.nBinsNormX * cfg.nBinsNormY * cfg.nBinsNormX * cfg.nBinsNormY;
-  histNormCentralLOR =
-      (cfg.nBinsNormX * cfg.nBinsNormY + 1) *
-      (cfg.nBinsNormX * (cfg.nBinsNormY / 2) + cfg.nBinsNormX / 2);
-  size_t histNormSize = histNormPairSize * nPairs;
-  histNorm.resize(histNormSize, 0.0);
 }
 
-void HistogramSet::accumulateCoincidence(
-    const single &s1, const single &s2, const std::array<double, 3> &p1,
-    const std::array<double, 3> &p2, const coincidence &c, unsigned normBin1X,
-    unsigned normBin1Y, unsigned normBin2X,
-                             unsigned normBin2Y, size_t lorIdx) {
+void HistogramSet::accumulateCoincidence(const single &s1, const single &s2,
+                                         const std::array<double, 3> &p1,
+                                         const std::array<double, 3> &p2,
+                                         const coincidence &c, size_t lorIdx) {
 
   ++histP[c.pair];
   ++histPx[2 * c.pair * cfg.nBinsX + c.xPosition1];
   ++histPx[2 * c.pair * cfg.nBinsX + cfg.nBinsX + c.xPosition2];
   ++histPy[2 * c.pair * cfg.nBinsY + c.yPosition1];
   ++histPy[2 * c.pair * cfg.nBinsY + cfg.nBinsY + c.yPosition2];
-
-  const unsigned histPairIndex = c.pair;
-  const unsigned pairFirstIndex = histPairIndex * histNormPairSize;
-  const unsigned binFirstIndex = (normBin1Y * cfg.nBinsNormX + normBin1X) *
-                                 cfg.nBinsNormX * cfg.nBinsNormY;
-  histNorm[pairFirstIndex + binFirstIndex + normBin2Y * cfg.nBinsNormX +
-           normBin2X] += 1.0;
 
   if (cfg.generateHistogram == GENERATE_HISTOGRAM::LOR_INDEX) {
     ++histLOR[lorIdx];

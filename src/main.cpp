@@ -138,12 +138,12 @@ int main(int argc, char **argv) {
         double p2Aux[3] = {window[result.iCoincidence].x,
                            window[result.iCoincidence].y,
                            window[result.iCoincidence].z};
-        p2 = toLocal(
-            p2Aux, geo.detectorSizeX, geo.detectorSizeY, cfg.detectorDepth,
-            geo.ringRad,
-            geo.Rz[window[result.iCoincidence].module % geo.modPerRing],
-            geo.Dz[window[result.iCoincidence].module / geo.modPerRing], pBlur,
-            gen);
+        p2 =
+            toLocal(p2Aux, geo.detectorSizeX, geo.detectorSizeY,
+                    cfg.detectorDepth, geo.ringRad,
+                    geo.Rz[window[result.iCoincidence].module % geo.modPerRing],
+                    geo.Dz[window[result.iCoincidence].module / geo.modPerRing],
+                    pBlur, gen);
       } else {
         double p1Blur[3] = {window[0].x + pBlur(gen), window[0].y + pBlur(gen),
                             window[0].z + pBlur(gen)};
@@ -154,19 +154,18 @@ int main(int argc, char **argv) {
         lor0 = std::array<double, 3>{p1Blur[0], p1Blur[1], p1Blur[2]};
         lor1 = std::array<double, 3>{p2Blur[0], p2Blur[1], p2Blur[2]};
 
-        p1 = project(
-            p1Blur, p2Blur, geo.detectorSizeX, geo.detectorSizeY,
-            cfg.detectorDepth, geo.ringRad,
-            geo.Rz[window[0].module % geo.modPerRing],
-            geo.Dz[window[0].module / geo.modPerRing],
-            cfg.projectionMethod == PROJECTION_METHOD::EXTEND_DETECTOR);
-        p2 = project(p2Blur, p1Blur, geo.detectorSizeX, geo.detectorSizeY,
-                     cfg.detectorDepth, geo.ringRad,
-                     geo.Rz[window[result.iCoincidence].module %
-                            geo.modPerRing],
-                     geo.Dz[window[result.iCoincidence].module /
-                            geo.modPerRing],
-                     cfg.projectionMethod == PROJECTION_METHOD::EXTEND_DETECTOR);
+        p1 =
+            project(p1Blur, p2Blur, geo.detectorSizeX, geo.detectorSizeY,
+                    cfg.detectorDepth, geo.ringRad,
+                    geo.Rz[window[0].module % geo.modPerRing],
+                    geo.Dz[window[0].module / geo.modPerRing],
+                    cfg.projectionMethod == PROJECTION_METHOD::EXTEND_DETECTOR);
+        p2 =
+            project(p2Blur, p1Blur, geo.detectorSizeX, geo.detectorSizeY,
+                    cfg.detectorDepth, geo.ringRad,
+                    geo.Rz[window[result.iCoincidence].module % geo.modPerRing],
+                    geo.Dz[window[result.iCoincidence].module / geo.modPerRing],
+                    cfg.projectionMethod == PROJECTION_METHOD::EXTEND_DETECTOR);
       }
 
       if (p1[0] >= geo.detectorSizeX || p1[0] <= 0.0 ||
@@ -178,26 +177,25 @@ int main(int argc, char **argv) {
 
         if (cfg.projectionMethod != PROJECTION_METHOD::EXTEND_DETECTOR) {
           char auxBuffer[1000];
-          snprintf(auxBuffer, 1000,
-                   "Warning: Unconsistent coincidence data.\n"
-                   " Original P1: %15.5E %15.5E %15.5E %15.5E %15.15E\n"
-                   " Original P2: %15.5E %15.5E %15.5E %15.5E %15.15E\n"
-                   "Resulting P1: %15.5E %15.5E %15.5E %15.5E %15.15E\n"
-                   "Resulting P2: %15.5E %15.5E %15.5E %15.5E %15.15E\n"
-                   "P1 Ring: %d, Module: %d (%d)\n"
-                   "P2 Ring: %d, Module: %d (%d)\n",
-                   window[0].e, window[0].x, window[0].y, window[0].z,
-                   window[0].t, window[result.iCoincidence].e,
-                   window[result.iCoincidence].x, window[result.iCoincidence].y,
-                   window[result.iCoincidence].z, window[result.iCoincidence].t,
-                   window[0].e, p1[0], p1[1], p1[2], window[0].t,
-                   window[result.iCoincidence].e, p2[0], p2[1], p2[2],
-                   window[result.iCoincidence].t,
-                   window[0].module / geo.modPerRing,
-                   window[0].module % geo.modPerRing, window[0].module,
-                   window[result.iCoincidence].module / geo.modPerRing,
-                   window[result.iCoincidence].module % geo.modPerRing,
-                   window[result.iCoincidence].module);
+          snprintf(
+              auxBuffer, 1000,
+              "Warning: Unconsistent coincidence data.\n"
+              " Original P1: %15.5E %15.5E %15.5E %15.5E %15.15E\n"
+              " Original P2: %15.5E %15.5E %15.5E %15.5E %15.15E\n"
+              "Resulting P1: %15.5E %15.5E %15.5E %15.5E %15.15E\n"
+              "Resulting P2: %15.5E %15.5E %15.5E %15.5E %15.15E\n"
+              "P1 Ring: %d, Module: %d (%d)\n"
+              "P2 Ring: %d, Module: %d (%d)\n",
+              window[0].e, window[0].x, window[0].y, window[0].z, window[0].t,
+              window[result.iCoincidence].e, window[result.iCoincidence].x,
+              window[result.iCoincidence].y, window[result.iCoincidence].z,
+              window[result.iCoincidence].t, window[0].e, p1[0], p1[1], p1[2],
+              window[0].t, window[result.iCoincidence].e, p2[0], p2[1], p2[2],
+              window[result.iCoincidence].t, window[0].module / geo.modPerRing,
+              window[0].module % geo.modPerRing, window[0].module,
+              window[result.iCoincidence].module / geo.modPerRing,
+              window[result.iCoincidence].module % geo.modPerRing,
+              window[result.iCoincidence].module);
           warnings += auxBuffer;
         }
       } else {
@@ -215,59 +213,56 @@ int main(int argc, char **argv) {
         unsigned normBin1X = 0, normBin1Y = 0, normBin2X = 0, normBin2Y = 0;
         size_t lorIdx = 0;
 
+        if (pairs[result.iPair].a ==
+            (cfg.useLogicalDetectors
+                 ? window[0].module
+                 : sim2devModule(geo.modPerRing, window[0].module))) {
+          c.energy1 = window[0].e;
+          c.xPosition1 = static_cast<unsigned short>(p1[0] / geo.dBinSizeX);
+          c.yPosition1 = static_cast<unsigned short>(p1[1] / geo.dBinSizeY);
 
-          if (pairs[result.iPair].a ==
-              (cfg.useLogicalDetectors
-                   ? window[0].module
-                   : sim2devModule(geo.modPerRing, window[0].module))) {
-            c.energy1 = window[0].e;
-            c.xPosition1 = static_cast<unsigned short>(p1[0] / geo.dBinSizeX);
-            c.yPosition1 = static_cast<unsigned short>(p1[1] / geo.dBinSizeY);
+          c.energy2 = window[result.iCoincidence].e;
+          c.xPosition2 = static_cast<unsigned short>(p2[0] / geo.dBinSizeX);
+          c.yPosition2 = static_cast<unsigned short>(p2[1] / geo.dBinSizeY);
 
-            c.energy2 = window[result.iCoincidence].e;
-            c.xPosition2 = static_cast<unsigned short>(p2[0] / geo.dBinSizeX);
-            c.yPosition2 = static_cast<unsigned short>(p2[1] / geo.dBinSizeY);
+          normBin1X = static_cast<unsigned>(p1[0] / geo.dBinSizeNormX);
+          normBin1Y = static_cast<unsigned>(p1[1] / geo.dBinSizeNormY);
 
-            normBin1X = static_cast<unsigned>(p1[0] / geo.dBinSizeNormX);
-            normBin1Y = static_cast<unsigned>(p1[1] / geo.dBinSizeNormY);
+          normBin2X = static_cast<unsigned>(p2[0] / geo.dBinSizeNormX);
+          normBin2Y = static_cast<unsigned>(p2[1] / geo.dBinSizeNormY);
+        } else {
+          c.energy1 = window[result.iCoincidence].e;
+          c.xPosition1 = static_cast<unsigned short>(p2[0] / geo.dBinSizeX);
+          c.yPosition1 = static_cast<unsigned short>(p2[1] / geo.dBinSizeY);
 
-            normBin2X = static_cast<unsigned>(p2[0] / geo.dBinSizeNormX);
-            normBin2Y = static_cast<unsigned>(p2[1] / geo.dBinSizeNormY);
-          } else {
-            c.energy1 = window[result.iCoincidence].e;
-            c.xPosition1 = static_cast<unsigned short>(p2[0] / geo.dBinSizeX);
-            c.yPosition1 = static_cast<unsigned short>(p2[1] / geo.dBinSizeY);
+          c.energy2 = window[0].e;
+          c.xPosition2 = static_cast<unsigned short>(p1[0] / geo.dBinSizeX);
+          c.yPosition2 = static_cast<unsigned short>(p1[1] / geo.dBinSizeY);
 
-            c.energy2 = window[0].e;
-            c.xPosition2 = static_cast<unsigned short>(p1[0] / geo.dBinSizeX);
-            c.yPosition2 = static_cast<unsigned short>(p1[1] / geo.dBinSizeY);
+          normBin1X = static_cast<unsigned>(p2[0] / geo.dBinSizeNormX);
+          normBin1Y = static_cast<unsigned>(p2[1] / geo.dBinSizeNormY);
 
-            normBin1X = static_cast<unsigned>(p2[0] / geo.dBinSizeNormX);
-            normBin1Y = static_cast<unsigned>(p2[1] / geo.dBinSizeNormY);
+          normBin2X = static_cast<unsigned>(p1[0] / geo.dBinSizeNormX);
+          normBin2Y = static_cast<unsigned>(p1[1] / geo.dBinSizeNormY);
+        }
 
-            normBin2X = static_cast<unsigned>(p1[0] / geo.dBinSizeNormX);
-            normBin2Y = static_cast<unsigned>(p1[1] / geo.dBinSizeNormY);
-          }
+        if (normBin1X >= cfg.nBinsNormX || normBin2X >= cfg.nBinsNormX ||
+            normBin1Y >= cfg.nBinsNormY || normBin2Y >= cfg.nBinsNormY) {
+          printf("Unexpected bin index\n");
+          return 1;
+        }
 
-          if (normBin1X >= cfg.nBinsNormX || normBin2X >= cfg.nBinsNormX ||
-              normBin1Y >= cfg.nBinsNormY || normBin2Y >= cfg.nBinsNormY) {
-            printf("Unexpected bin index\n");
-            return 1;
-          }
+        normBin1X = cfg.nBinsNormX - 1 - normBin1X;
+        normBin2X = cfg.nBinsNormX - 1 - normBin2X;
 
-          normBin1X = cfg.nBinsNormX - 1 - normBin1X;
-          normBin2X = cfg.nBinsNormX - 1 - normBin2X;
+        c.pair = result.iPair;
 
-          c.pair = result.iPair;
+        lorIdx = normBin1X + normBin1Y * cfg.N + normBin2X * cfg.N * cfg.N +
+                 normBin2Y * cfg.N * cfg.N * cfg.N +
+                 c.pair * cfg.N * cfg.N * cfg.N * cfg.N;
 
-          lorIdx = normBin1X + normBin1Y * cfg.N + normBin2X * cfg.N * cfg.N +
-                   normBin2Y * cfg.N * cfg.N * cfg.N +
-                   c.pair * cfg.N * cfg.N * cfg.N * cfg.N;
-
-
-        hists.accumulateCoincidence(
-            window[0], window[result.iCoincidence], p1, p2, c, normBin1X,
-            normBin1Y, normBin2X, normBin2Y, lorIdx);
+        hists.accumulateCoincidence(window[0], window[result.iCoincidence], p1,
+                                    p2, c, lorIdx);
       }
 
       window.erase(window.begin() + result.iCoincidence);
@@ -344,7 +339,7 @@ int main(int argc, char **argv) {
   printf("Number of 5+ multiples: %lu\n", nQuintuplesOrMore);
 
   writer->finalize();
-  hists.writeAll("modules", maxTimestamp, nCoincidences);
+  hists.writeAll("modules", cfg.header);
 
   return 0;
 }

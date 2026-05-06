@@ -22,9 +22,6 @@ struct HistogramSet {
   std::vector<unsigned> histMe;
   std::vector<unsigned> histMez;
 
-  std::vector<float> histNorm;
-
-
   const SimConfig &cfg;
   const DetectorGeometry &geo;
   size_t nPairs;
@@ -34,23 +31,17 @@ struct HistogramSet {
   size_t nBinsE;
   size_t nBinsZ;
 
-  size_t histNormPairSize;
-  size_t histNormCentralLOR;
-
   HistogramSet(const SimConfig &cfg, const DetectorGeometry &geo,
                size_t nPairs);
 
   void accumulateCoincidence(const single &s1, const single &s2,
                              const std::array<double, 3> &p1,
                              const std::array<double, 3> &p2,
-                             const coincidence &c, unsigned normBin1X,
-                             unsigned normBin1Y, unsigned normBin2X,
-                             unsigned normBin2Y, size_t lorIdx);
+                             const coincidence &c, size_t lorIdx);
 
   void accumulateSingle(const single &s, const std::array<double, 3> &p);
 
-  void writeAll(const std::string &outputDir, double maxTimestamp,
-                unsigned long nCoincidences) const;
+  void writeAll(const std::string &outputDir, const LMHeader &header) const;
 
 private:
   void writeModuleHistograms(const std::string &outputDir) const;
