@@ -74,40 +74,6 @@ struct single {
 
   single() : t(1.0e35) {}
 
-  inline int readSingle(FILE *f, const unsigned m, const double emin,
-                        const double emax) {
-    // Reset time
-    t = 1.0e35;
-    // Reset energy
-    e = -1.0;
-    // Set module
-    module = m;
-
-    while (e < emin || e > emax) {
-      // Read next single
-
-      fread(&e, sizeof(float), 1, f);
-      fread(&x, sizeof(float), 1, f);
-      fread(&y, sizeof(float), 1, f);
-      fread(&z, sizeof(float), 1, f);
-
-      // Skip weight
-      float w;
-      fread(&w, sizeof(float), 1, f);
-
-      fread(&t, sizeof(double), 1, f);
-      fread(info.data(), sizeof(uint8_t), 3, f);
-
-      if (fread(&hist, sizeof(unsigned long long), 1, f) != 1) {
-        printf("End of file reached\n");
-        fflush(stdout);
-        t = 1.0e35;
-        return 1;
-      }
-    }
-    return 0;
-  }
-
   inline int readPenRed(FILE *f, const unsigned m, const double emin,
                         const double emax, const double eRes, const double tRes,
                         std::normal_distribution<double> &normDist,
