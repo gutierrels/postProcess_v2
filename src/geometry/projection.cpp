@@ -1,4 +1,8 @@
-#include "common.hh"
+
+#include "geometry/projection.hh"
+#include "common/math_utils.hh"
+#include <algorithm>
+#include <cmath>
 
 std::array<double, 3> project(const double *p1Orig, const double *p2Orig,
                               const double detSizeX, const double detSizeY,
@@ -124,69 +128,50 @@ std::array<double, 3> toLocal(const double *p1Orig, const double detSizeX,
   return {p1[1], p1[2], p1[0]};
 }
 
-double attenuationFactorWithAir(const std::array<double, 3> &p1,
-                                const std::array<double, 3> &p2,
-                                double mu_cylinder, double mu_air,
-                                const std::array<double, 3> &cylinder_origin,
-                                double radius, double height) {
+std::array<double, 3>
+toLocal(const double *p1Orig, const double detSizeX, const double detSizeY,
+        const double detDepth, const double ringRad,
+        const std::array<double, 9> &Rz, double Dz,
+        std::normal_distribution<double> &pBlur, std::mt19937 &gen) {
 
-  std::array<double, 3> d = subtract(p2, p1); // Direction vector
-  std::array<double, 3> o =
-      subtract(p1, cylinder_origin); // LOR origin relative to cylinder
+  const std::array<double, 3> local =
+      toLocal(p1Orig, detSizeX, detSizeY, detDepth, ringRad, Rz, Dz);
 
-  // Total LOR length
-  double L_total = std::sqrt(d[0] * d[0] + d[1] * d[1] + d[2] * d[2]);
+  // Apply bluring
+  unsigned count = 0;
+  std::array<double, 3> res;
+  do {
+    res[0] = local[0] + pBlur(gen);
+  } while ((res[0] <= 0.0 || res[0] >= detSizeX) && count++ < 1000);
+  do {
+    res[1] = local[1] + pBlur(gen);
+  } while ((res[1] <= 0.0 || res[1] >= detSizeY) && count++ < 1000);
+  do {
+    res[2] = local[2] + pBlur(gen);
+  } while ((res[2] <= 0.0 || res[2] >= detDepth) && count++ < 1000);
 
-  // Quadratic coefficients for intersection with infinite cylinder (aligned
-  // along Z)
-  double a = d[0] * d[0] + d[1] * d[1];
-  double b = 2 * (o[0] * d[0] + o[1] * d[1]);
-  double c = o[0] * o[0] + o[1] * o[1] - radius * radius;
+  if (count >= 1000)
+    printf("Error bluring!\n");
 
-  double discriminant = b * b - 4 * a * c;
-  double L_cylinder = 0.0;
+  return res;
+}
 
-  if (discriminant >= 0 && a != 0.0) {
-    double sqrt_disc = std::sqrt(discriminant);
-    double t1 = (-b - sqrt_disc) / (2 * a);
-    double t2 = (-b + sqrt_disc) / (2 * a);
 
-    // Clamp to [0,1] range of LOR
-    t1 = std::max(0.0, std::min(1.0, t1));
-    t2 = std::max(0.0, std::min(1.0, t2));
 
-    if (t1 != t2) {
-      // Compute Z coordinates of entry and exit points
-      double z1 = o[2] + d[2] * t1;
-      double z2 = o[2] + d[2] * t2;
+void toLogical(single &s, const unsigned modPerRing,
+               const double logicalDetSizeY,
+               const std::vector<std::array<double, 9>> &Rz,
+               const std::vector<double> &Dz) {
 
-      double z_min = 0.0;
-      double z_max = height;
+  unsigned physRing = s.module / modPerRing;
+  unsigned modInRing = s.module % modPerRing;
 
-      if (!(z1 < z_min && z2 < z_min) && !(z1 > z_max && z2 > z_max)) {
-        // Clamp Z to cylinder bounds
-        double tz1 = t1, tz2 = t2;
-        if (z1 < z_min)
-          tz1 = (z_min - o[2]) / d[2];
-        if (z1 > z_max)
-          tz1 = (z_max - o[2]) / d[2];
-        if (z2 < z_min)
-          tz2 = (z_min - o[2]) / d[2];
-        if (z2 > z_max)
-          tz2 = (z_max - o[2]) / d[2];
+  double p[3] = {s.x, s.y, s.z};
+  matmul3D(Rz[modInRing].data(), p); // Rotar al módulo 0
+  p[2] -= Dz[physRing];              // Quitar traslación axial del anillo
 
-        // Final entry and exit points
-        std::array<double, 3> entry = add(p1, scale(d, tz1));
-        std::array<double, 3> exit = add(p1, scale(d, tz2));
+  bool isUpper = (p[2] >= logicalDetSizeY);
 
-        double dx = exit[0] - entry[0];
-        double dy = exit[1] - entry[1];
-        double dz = exit[2] - entry[2];
-        L_cylinder = std::sqrt(dx * dx + dy * dy + dz * dz);
-      }
-    }
-  }
-
-  double L_air = L_total - L_cylinder;
-  return std::exp(mu_cylinder * L_cylinder + mu_air * L_air);
+  unsigned logRing = physRing * 2 + (isUpper ? 1 : 0);
+  s.module = logRing * modPerRing + modInRing;
 }

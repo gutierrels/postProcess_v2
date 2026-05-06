@@ -1,6 +1,6 @@
 
-#ifndef __BRUKER_PENRED_POSTPROCESS__
-#define __BRUKER_PENRED_POSTPROCESS__
+#ifndef POSTPROCESS_COMMON_TYPES_HH
+#define POSTPROCESS_COMMON_TYPES_HH
 
 #include <algorithm>
 #include <array>
@@ -8,16 +8,13 @@
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
-#include <filesystem>
-#include <fstream>
-#include <iostream>
-#include <map>
 #include <random>
 #include <string>
-#include <thread>
 #include <vector>
 
-#define WITH_HIST 1
+// ---------------------------------------------------------------------------
+// Enums
+// ---------------------------------------------------------------------------
 
 namespace COINCIDENCE_METHOD {
 enum COINCIDENCE_METHOD : unsigned {
@@ -32,7 +29,6 @@ namespace OUTPUT_FORMAT {
 enum OUTPUT_FORMAT : unsigned {
   BRUKER_LM = 0,
   BRUKER_LM_ONLY_COINCIDENCES,
-  CASTOR,
 };
 }
 
@@ -44,21 +40,6 @@ enum PROJECTION_METHOD : unsigned {
 };
 }
 
-namespace ATTENUATION_METHOD {
-enum ATTENUATION_METHOD : unsigned {
-  NONE = 0,
-  CYLINDER,
-};
-}
-
-namespace NORMALIZATION_METHOD {
-enum NORMALIZATION_METHOD : unsigned {
-  NONE = 0,
-  CREATE,
-  APPLY,
-};
-}
-
 namespace GENERATE_HISTOGRAM {
 enum GENERATE_HISTOGRAM : unsigned {
   NONE = 0,
@@ -66,43 +47,18 @@ enum GENERATE_HISTOGRAM : unsigned {
 };
 }
 
+// ---------------------------------------------------------------------------
+// Module-index helpers
+// ---------------------------------------------------------------------------
+
 inline unsigned sim2devModule(const unsigned ringModules, const unsigned imod) {
   const unsigned iRing = imod / ringModules;
   return iRing * ringModules + ((imod + (ringModules - 2)) % ringModules);
 }
 
-inline unsigned castorCrystalIndex(const unsigned iModuleGlob,
-                                   const unsigned modulesPerRing,
-                                   const double nxBins, const double nyBins,
-                                   const double dxBin, const double dyBin,
-                                   const std::array<double, 3> &pLocal) {
-  const unsigned cristalsPerRing = nxBins * modulesPerRing;
-  const unsigned iModuleDev = sim2devModule(modulesPerRing, iModuleGlob);
-  // const unsigned iModuleDev = iModuleGlob;
-  const unsigned iRing = iModuleDev / modulesPerRing;
-  const unsigned iModule = iModuleDev % modulesPerRing;
-
-  unsigned ix = nxBins - 1 - static_cast<unsigned>(pLocal[0] / dxBin);
-  unsigned iy = nyBins - 1 - static_cast<unsigned>(pLocal[1] / dyBin);
-
-  unsigned iCastorRing = iRing * nyBins + iy;
-  return iCastorRing * cristalsPerRing + iModule * nxBins + ix;
-}
-
-inline std::pair<uint32_t, uint32_t>
-castorLOR(const unsigned iModule1Glob, const unsigned iModule2Glob,
-          const std::array<double, 3> &p1Local,
-          const std::array<double, 3> &p2Local, const unsigned modulesPerRing,
-          const double nxBins, const double nyBins, const double dxBin,
-          const double dyBin) {
-
-  unsigned det1 = castorCrystalIndex(iModule1Glob, modulesPerRing, nxBins,
-                                     nyBins, dxBin, dyBin, p1Local);
-  unsigned det2 = castorCrystalIndex(iModule2Glob, modulesPerRing, nxBins,
-                                     nyBins, dxBin, dyBin, p2Local);
-
-  return std::pair<uint32_t, uint32_t>(det1, det2);
-}
+// ---------------------------------------------------------------------------
+// single
+// ---------------------------------------------------------------------------
 
 struct single {
 
@@ -235,13 +191,9 @@ struct single {
   inline bool operator==(const single &o) const { return t == o.t; }
 };
 
-#pragma pack(push)
-#pragma pack(4)
-struct coincidenceCastor {
-  uint32_t timestamp; // ms
-  uint32_t det1, det2;
-};
-#pragma pack(pop)
+// ---------------------------------------------------------------------------
+// coincidence
+// ---------------------------------------------------------------------------
 
 struct coincidence {
   double time;
@@ -278,6 +230,10 @@ struct coincidence {
     return fread(&c, sizeof(coincidence), 1, fin) == sizeof(coincidence);
   }
 };
+
+// ---------------------------------------------------------------------------
+// LMHeader
+// ---------------------------------------------------------------------------
 
 #pragma pack(push)
 #pragma pack(4)
@@ -346,6 +302,10 @@ struct LMHeader {
 };
 #pragma pack(pop)
 
+// ---------------------------------------------------------------------------
+// detPair
+// ---------------------------------------------------------------------------
+
 struct detPair {
   unsigned a, b;
 
@@ -373,134 +333,6 @@ inline unsigned getPair(const std::vector<detPair> &list, const unsigned a,
       return i;
   }
   return list.size();
-}
-
-std::array<double, 3> project(const double *p1Orig, const double *p2Orig,
-                              const double detSizeX, const double detSizeY,
-                              const double detDepth, const double ringRad,
-                              const std::array<double, 9> &Rz, double Dz,
-                              const bool extendDetector);
-
-std::array<double, 3> toLocal(const double *p1Orig, const double detSizeX,
-                              const double detSizeY, const double detDepth,
-                              const double ringRad,
-                              const std::array<double, 9> &Rz, double Dz);
-inline std::array<double, 3>
-toLocal(const double *p1Orig, const double detSizeX, const double detSizeY,
-        const double detDepth, const double ringRad,
-        const std::array<double, 9> &Rz, double Dz,
-        std::normal_distribution<double> &pBlur, std::mt19937 &gen) {
-
-  const std::array<double, 3> local =
-      toLocal(p1Orig, detSizeX, detSizeY, detDepth, ringRad, Rz, Dz);
-
-  // Apply bluring
-  unsigned count = 0;
-  std::array<double, 3> res;
-  do {
-    res[0] = local[0] + pBlur(gen);
-  } while ((res[0] <= 0.0 || res[0] >= detSizeX) && count++ < 1000);
-  do {
-    res[1] = local[1] + pBlur(gen);
-  } while ((res[1] <= 0.0 || res[1] >= detSizeY) && count++ < 1000);
-  do {
-    res[2] = local[2] + pBlur(gen);
-  } while ((res[2] <= 0.0 || res[2] >= detDepth) && count++ < 1000);
-
-  if (count >= 1000)
-    printf("Error bluring!\n");
-
-  return res;
-}
-
-inline std::string stringifyFileProgress(FILE *f, const std::uintmax_t fSize,
-                                         const char *prefix) {
-
-  std::stringstream ss;
-
-  ss << std::fixed << std::setprecision(2);
-
-  ss << prefix << " [";
-
-  // Calculate file progress
-  double progress = 1.0;
-  if (f != nullptr) {
-    progress = static_cast<double>(ftell(f)) / static_cast<double>(fSize);
-  }
-
-  constexpr const int ibarWidth = 50;
-  constexpr const double barWidth = static_cast<double>(ibarWidth);
-
-  int pos = static_cast<int>(barWidth * progress);
-  for (int ib = 0; ib < pos; ++ib) {
-    ss << "=";
-  }
-  if (pos < ibarWidth - 1) {
-    ss << ">";
-    for (int ib = pos; ib < ibarWidth; ++ib) {
-      ss << " ";
-    }
-  }
-  ss << "] " << progress * 100.0 << " %\n";
-
-  return ss.str();
-}
-
-inline void matmul3D(const double A[9], double B[3]) {
-
-  double C[3];
-
-  for (int j = 0; j < 3; j++) {
-    C[j] = 0.0;
-    for (int i = 0; i < 3; i++) {
-      C[j] += A[3 * j + i] * B[i];
-    }
-  }
-  for (int i = 0; i < 3; i++)
-    B[i] = C[i];
-}
-
-inline double dot(const std::array<double, 3> &a,
-                  const std::array<double, 3> &b) {
-  return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
-}
-
-inline std::array<double, 3> subtract(const std::array<double, 3> &a,
-                                      const std::array<double, 3> &b) {
-  return {a[0] - b[0], a[1] - b[1], a[2] - b[2]};
-}
-
-inline std::array<double, 3> add(const std::array<double, 3> &a,
-                                 const std::array<double, 3> &b) {
-  return {a[0] + b[0], a[1] + b[1], a[2] + b[2]};
-}
-
-inline std::array<double, 3> scale(const std::array<double, 3> &v, double s) {
-  return {v[0] * s, v[1] * s, v[2] * s};
-}
-
-double attenuationFactorWithAir(const std::array<double, 3> &p1,
-                                const std::array<double, 3> &p2,
-                                double mu_cylinder, double mu_air,
-                                const std::array<double, 3> &cylinder_origin,
-                                double radius, double height);
-
-inline void toLogical(single &s, const unsigned modPerRing,
-                      const double logicalDetSizeY,
-                      const std::vector<std::array<double, 9>> &Rz,
-                      const std::vector<double> &Dz) {
-
-  unsigned physRing = s.module / modPerRing;
-  unsigned modInRing = s.module % modPerRing;
-
-  double p[3] = {s.x, s.y, s.z};
-  matmul3D(Rz[modInRing].data(), p); // Rotar al módulo 0
-  p[2] -= Dz[physRing];              // Quitar traslación axial del anillo
-
-  bool isUpper = (p[2] >= logicalDetSizeY);
-
-  unsigned logRing = physRing * 2 + (isUpper ? 1 : 0);
-  s.module = logRing * modPerRing + modInRing;
 }
 
 #endif
