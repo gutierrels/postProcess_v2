@@ -77,10 +77,7 @@ DetectorGeometry DetectorGeometry::build(SimConfig &cfg) {
   geo.totalMods = geo.modPerRing * geo.nRings;
   geo.nPhysicalTotalMods = geo.modPerRing * geo.nPhysicalRings;
 
-  // Energy window (eV)
-  geo.emin = 511.0e3 * (1.0 - cfg.energyWindow);
-  geo.emax = 511.0e3 * (1.0 + cfg.energyWindow);
-  geo.eminkeV = geo.emin / 1.0e3;
+
 
   // Physical Dz (always needed, used for toLogical in logical mode)
   geo.physicalDz.resize(geo.nPhysicalRings);

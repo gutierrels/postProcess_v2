@@ -1,5 +1,6 @@
 
 #include "histogram/histograms.hh"
+#include <chrono>
 #include <cstdio>
 #include <filesystem>
 
@@ -73,10 +74,15 @@ void HistogramSet::writeAll(const std::string &outputDir,
   if (cfg.generateHistogram == GENERATE_HISTOGRAM::LOR_INDEX) {
     fout = fopen("LOR.hist", "wb");
     if (fout != nullptr) {
-      // Write LM header
+      // start timer
+      auto start = std::chrono::high_resolution_clock::now();
+
       fwrite(&header, sizeof(LMHeader), 1, fout);
       fwrite(histLOR.data(), sizeof(float), histLOR.size(), fout);
       fclose(fout);
+      auto end = std::chrono::high_resolution_clock::now();
+      std::chrono::duration<double> elapsed = end - start;
+      printf("Time to write LOR histogram: %f s\n", elapsed.count());
     }
   }
 
@@ -119,7 +125,7 @@ void HistogramSet::writeModuleHistograms(const std::string &outputDir) const {
     if (fout != nullptr) {
       for (size_t i = 0; i < nBinsE; ++i)
         fprintf(fout, "%E %u\n",
-                geo.eminkeV + dekeV * (static_cast<double>(i) + 0.5),
+                cfg.eminkeV + dekeV * (static_cast<double>(i) + 0.5),
                 histMe[imod * nBinsE + i]);
       fclose(fout);
     }
@@ -130,7 +136,7 @@ void HistogramSet::writeModuleHistograms(const std::string &outputDir) const {
     if (fout != nullptr) {
       for (size_t i = 0; i < nBinsE; ++i) {
         fprintf(fout, "%E ",
-                geo.eminkeV + dekeV * (static_cast<double>(i) + 0.5));
+                cfg.eminkeV + dekeV * (static_cast<double>(i) + 0.5));
         for (size_t j = 0; j < nBinsZ; ++j) {
           fprintf(fout, "%u ",
                   histMez[imod * nBinsE * nBinsZ + i * nBinsZ + j]);

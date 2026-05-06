@@ -219,5 +219,9 @@ SimConfig parseConfig(const std::string &filename) {
   cfg.header.method = 6;
   cfg.header.StudyID = 1;
 
+  cfg.emin = 511.0e3 * (1.0 - cfg.energyWindow);
+  cfg.emax = 511.0e3 * (1.0 + cfg.energyWindow);
+  cfg.eminkeV = cfg.emin / 1.0e3;
+
   return cfg;
 }

@@ -36,10 +36,7 @@ struct DetectorGeometry {
   // Logical detector geometry
   double logicalDetectorSizeY;
 
-  // Energy window (eV)
-  double emin;
-  double emax;
-  double eminkeV;
+
 
   // Rotation matrices per module and axial offsets
   std::vector<std::array<double, 9>> Rz;

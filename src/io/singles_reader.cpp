@@ -30,7 +30,7 @@ SinglesReader::SinglesReader(const std::string &prefix,
 
   noInTimeSingles.resize(fmods.size());
   for (size_t i = 0; i < fmods.size(); ++i) {
-    int err = noInTimeSingles[i].readPenRed(fmods[i], i, geo.emin, geo.emax,
+    int err = noInTimeSingles[i].readPenRed(fmods[i], i, cfg.emin, cfg.emax,
                                             cfg.eRes, cfg.tRes, normDist, gen);
     if (err != 0) {
       printf("Error: Empty or corrupted module file (%zu)\n", i);
@@ -57,7 +57,7 @@ SinglesReader::~SinglesReader() {
 void SinglesReader::readNext(size_t fileIndex) {
   if (fmods[fileIndex] != nullptr) {
     int errRead = noInTimeSingles[fileIndex].readPenRed(
-        fmods[fileIndex], fileIndex, geo.emin, geo.emax, cfg.eRes, cfg.tRes,
+        fmods[fileIndex], fileIndex, cfg.emin, cfg.emax, cfg.eRes, cfg.tRes,
         normDist, gen);
 
     if (errRead != 0) {

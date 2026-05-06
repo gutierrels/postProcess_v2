@@ -37,6 +37,11 @@ struct SimConfig {
   bool useLogicalDetectors;
   unsigned nLogicalRings;
   unsigned discardMultiples;
+
+  // Energy window (eV)
+  double emin;
+  double emax;
+  double eminkeV;
 };
 
 SimConfig parseConfig(const std::string &filename);
