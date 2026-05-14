@@ -85,7 +85,8 @@ int main(int argc, char **argv) {
 
     if (window.size() > oldSize) {
       std::sort(window.begin() + oldSize, window.end());
-      std::inplace_merge(window.begin(), window.begin() + oldSize, window.end());
+      std::inplace_merge(window.begin(), window.begin() + oldSize,
+                         window.end());
     }
 
     double trueEndTime = window[0].t + cfg.coincidenceWindow;

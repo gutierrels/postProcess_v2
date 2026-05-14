@@ -6,3 +6,4 @@ penred2Coincidence
 info*
 *.hist
 build/
+.cache/

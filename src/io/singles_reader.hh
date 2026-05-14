@@ -16,7 +16,6 @@ public:
                 const SimConfig &cfg);
   ~SinglesReader();
 
-  // Returns the first single to seed the process
   single seedFirst();
 
   // Fills nextSingles with all events in [t, t + windowEndTime]
