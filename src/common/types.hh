@@ -64,8 +64,8 @@ struct single {
 
   // PenRed Save Flags Configuration
   // Adjust these to match tallies/singles/save/* in your PenRed config
-  static constexpr bool saveWeight = false;
-  static constexpr bool saveMetadata = false;
+  static constexpr bool saveWeight = true;
+  static constexpr bool saveMetadata = true;
   static constexpr bool saveHistory = true;
 
   static constexpr const size_t bufferSize =
