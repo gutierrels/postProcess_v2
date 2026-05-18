@@ -31,7 +31,6 @@ struct SimConfig {
 
   unsigned generateHistogram;
 
-
   std::string pairListFilename;
 
   bool useLogicalDetectors;
@@ -42,6 +41,10 @@ struct SimConfig {
   double emin;
   double emax;
   double eminkeV;
+
+  // PenRed Save Flags
+  bool saveWeight;
+  bool saveMetadata;
 };
 
 SimConfig parseConfig(const std::string &filename);

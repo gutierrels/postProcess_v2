@@ -26,3 +26,5 @@ FDG                    Isotope name
 6                         Number of logical rings (only used if logical detectors enabled)
 0                         Discard multiples (0-> No, 1-> only triples, 2 -> all multiples)
 1                           Generate histogram (0 -> No, 1 -> LOR index)
+1                       Save weight (0 -> No, 1 -> Yes)
+1                       Save metadata (0 -> No, 1 -> Yes) 

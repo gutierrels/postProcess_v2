@@ -64,8 +64,7 @@ struct single {
 
   // PenRed Save Flags Configuration
   // Adjust these to match tallies/singles/save/* in your PenRed config
-  static constexpr bool saveWeight = true;
-  static constexpr bool saveMetadata = true;
+
   static constexpr bool saveHistory = true;
 
   static constexpr const size_t bufferSize =
@@ -83,6 +82,7 @@ struct single {
 
   inline int readPenRed(FILE *f, const unsigned m, const double emin,
                         const double emax, const double eRes, const double tRes,
+                        bool saveWeight, bool saveMetadata,
                         std::normal_distribution<double> &normDist,
                         std::mt19937 &gen) {
     // Reset time
@@ -110,7 +110,7 @@ struct single {
         memcpy(&z, buffer + pos, sizeof(float));
         pos += sizeof(float);
 
-        if constexpr (saveWeight) {
+        if (saveWeight) {
           // If you ever need to store weight in the struct, do it here
           // memcpy(&w, buffer + pos, sizeof(float));
           pos += sizeof(float);
@@ -119,7 +119,7 @@ struct single {
         memcpy(&t, buffer + pos, sizeof(double));
         pos += sizeof(double);
 
-        if constexpr (saveMetadata) {
+        if (saveMetadata) {
           memcpy(info.data(), buffer + pos, 3 * sizeof(uint8_t));
           pos += 3 * sizeof(uint8_t);
         }

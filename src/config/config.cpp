@@ -148,7 +148,6 @@ SimConfig parseConfig(const std::string &filename) {
     cfg.projectionMethod = PROJECTION_METHOD::NONE;
   }
 
-
   // Detector list filename
   infoS >> cfg.pairListFilename;
   infoS.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
@@ -168,12 +167,34 @@ SimConfig parseConfig(const std::string &filename) {
 
   // Generate histogram
   infoS >> auxInt;
+  infoS.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
   switch (auxInt) {
   case GENERATE_HISTOGRAM::LOR_INDEX:
     cfg.generateHistogram = GENERATE_HISTOGRAM::LOR_INDEX;
     break;
   default:
     cfg.generateHistogram = GENERATE_HISTOGRAM::NONE;
+  }
+
+  // PenRed Flags
+  infoS >> auxInt;
+  infoS.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+  switch (auxInt) {
+  case 1:
+    cfg.saveWeight = true;
+    break;
+  default:
+    cfg.saveWeight = false;
+  }
+
+  infoS >> auxInt;
+  infoS.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+  switch (auxInt) {
+  case 1:
+    cfg.saveMetadata = true;
+    break;
+  default:
+    cfg.saveMetadata = false;
   }
 
   if (!infoS) {
