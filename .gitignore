@@ -3,7 +3,7 @@ singles/
 *.lm
 *.dat
 penred2Coincidence
-info*
+config/info*
 *.hist
 build/
 .cache/
