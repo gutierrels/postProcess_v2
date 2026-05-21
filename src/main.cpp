@@ -11,7 +11,6 @@
 #include "io/singles_reader.hh"
 #include "output/lm_writer.hh"
 
-#include <iostream>
 
 int main(int argc, char **argv) {
   if (argc < 3) {
@@ -327,16 +326,15 @@ int main(int argc, char **argv) {
     }
 
     if (iterations % 100000 == 0) {
-      std::cout << "\033[2J\033[1;1H";
-      std::cout << reader.progressString()
-                << "Simultaneous processing singles: " << window.size() << "\n"
-                << warnings << "\n";
+      printf("\033[2J\033[1;1H");
+      printf("%sSimultaneous processing singles: %zu\n%s\n",
+             reader.progressString().c_str(), window.size(), warnings.c_str());
       warnings.clear();
     }
     ++iterations;
   }
 
-  std::cout << reader.progressString() << warnings << "\n";
+  printf("%s%s\n", reader.progressString().c_str(), warnings.c_str());
   printf("Required iterations to process all files: %lu\n", iterations);
   printf("Number of coincidences: %lu\n", nCoincidences);
   printf("Number of singles     : %lu\n", nSingles);
