@@ -4,7 +4,7 @@
 #include <cmath>
 
 CoincidenceEngine::CoincidenceEngine(CoincidenceMethod method,
-                                     const std::vector<DetectorPair> &pairs,
+                                     const std::vector<DetectorPair> *pairs,
                                      unsigned modPerRing, bool logicalMode)
     : coinMethod(method), pairIndexes(pairs), modPerRing(modPerRing),
       useLogicalDetectors(logicalMode) {}
@@ -12,7 +12,7 @@ CoincidenceEngine::CoincidenceEngine(CoincidenceMethod method,
 CoincidenceResult
 CoincidenceEngine::findCoincidence(const std::vector<SingleEvent> &window,
                                    size_t windowSize) const {
-  CoincidenceResult result = {0, static_cast<unsigned>(pairIndexes.size())};
+  CoincidenceResult result = {0, static_cast<unsigned>(pairIndexes->size())};
 
   if (windowSize <= 1) {
     return result;
@@ -32,9 +32,9 @@ CoincidenceEngine::findCoincidence(const std::vector<SingleEvent> &window,
   case CoincidenceMethod::TAKE_WINNER_IF_ALL_ARE_GOODS: {
     bool allGood = true;
     for (size_t i = 1; i < windowSize; ++i) {
-      localPair = getPair(pairIndexes, nextSingDevMod,
+      localPair = getPair(*pairIndexes, nextSingDevMod,
                           resolveModule(window[i].module));
-      if (localPair >= pairIndexes.size()) {
+      if (localPair >= pairIndexes->size()) {
         allGood = false;
         break;
       }
@@ -42,7 +42,7 @@ CoincidenceEngine::findCoincidence(const std::vector<SingleEvent> &window,
 
     if (allGood) {
       for (size_t i = 1; i < windowSize; ++i) {
-        localPair = getPair(pairIndexes, nextSingDevMod,
+        localPair = getPair(*pairIndexes, nextSingDevMod,
                             resolveModule(window[i].module));
         if (emaxSingle < window[i].e) {
           emaxSingle = window[i].e;
@@ -56,9 +56,9 @@ CoincidenceEngine::findCoincidence(const std::vector<SingleEvent> &window,
   case CoincidenceMethod::TAKE_SAME_HISTORY:
     for (size_t i = 1; i < windowSize; ++i) {
       // Get pair
-      localPair = getPair(pairIndexes, nextSingDevMod,
+      localPair = getPair(*pairIndexes, nextSingDevMod,
                           resolveModule(window[i].module));
-      if (localPair >= pairIndexes.size())
+      if (localPair >= pairIndexes->size())
         continue;
 
       // Check if can be considered as the next CoincidenceEvent
@@ -72,9 +72,9 @@ CoincidenceEngine::findCoincidence(const std::vector<SingleEvent> &window,
   case CoincidenceMethod::TAKE_SAME_HISTORY_511:
     for (size_t i = 1; i < windowSize; ++i) {
       // Get pair
-      localPair = getPair(pairIndexes, nextSingDevMod,
+      localPair = getPair(*pairIndexes, nextSingDevMod,
                           resolveModule(window[i].module));
-      if (localPair >= pairIndexes.size())
+      if (localPair >= pairIndexes->size())
         continue;
 
       // Check if can be considered as the next CoincidenceEvent
@@ -90,9 +90,9 @@ CoincidenceEngine::findCoincidence(const std::vector<SingleEvent> &window,
   default:
     for (size_t i = 1; i < windowSize; ++i) {
       // Get pair
-      localPair = getPair(pairIndexes, nextSingDevMod,
+      localPair = getPair(*pairIndexes, nextSingDevMod,
                           resolveModule(window[i].module));
-      if (localPair >= pairIndexes.size())
+      if (localPair >= pairIndexes->size())
         continue;
 
       result.iCoincidence = i;

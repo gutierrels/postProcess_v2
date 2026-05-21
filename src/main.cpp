@@ -31,7 +31,7 @@ int main(int argc, char **argv) {
   DetectorGeometry geo = DetectorGeometry::build(cfg);
   std::vector<DetectorPair> pairs = readPairList(cfg.pairListFilename);
   SinglesReader reader(argv[2], geo, cfg);
-  CoincidenceEngine engine(cfg.coinMethod, pairs, geo.modPerRing,
+  CoincidenceEngine engine(cfg.coinMethod, &pairs, geo.modPerRing,
                            cfg.useLogicalDetectors);
   HistogramSet hists(cfg, geo, pairs.size());
   std::unique_ptr<LMWriter> writer = LMWriter::create(cfg);

@@ -12,7 +12,7 @@ struct CoincidenceResult {
 
 class CoincidenceEngine {
 public:
-  CoincidenceEngine(CoincidenceMethod method, const std::vector<DetectorPair> &pairs,
+  CoincidenceEngine(CoincidenceMethod method, const std::vector<DetectorPair> *pairs,
                     unsigned modPerRing, bool useLogicalDetectors);
 
   CoincidenceResult findCoincidence(const std::vector<SingleEvent> &window,
@@ -20,7 +20,7 @@ public:
 
 private:
   CoincidenceMethod coinMethod;
-  const std::vector<DetectorPair> &pairIndexes;
+  const std::vector<DetectorPair> *pairIndexes;
   unsigned modPerRing;
   bool useLogicalDetectors;
 
