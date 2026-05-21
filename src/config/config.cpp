@@ -1,5 +1,6 @@
 
 #include "config/config.hh"
+#include "common/constants.hh"
 #include <cstdio>
 #include <fstream>
 #include <limits>
@@ -102,15 +103,15 @@ SimConfig parseConfig(const std::string &filename) {
   infoS >> auxInt;
   infoS.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
   switch (auxInt) {
-  case OUTPUT_FORMAT::BRUKER_LM_ONLY_COINCIDENCES:
+  case static_cast<int>(OutputFormat::BRUKER_LM_ONLY_COINCIDENCES):
     printf("Using Bruker LM format with only coincidences\n");
-    cfg.outputFormat = OUTPUT_FORMAT::BRUKER_LM_ONLY_COINCIDENCES;
+    cfg.outputFormat = OutputFormat::BRUKER_LM_ONLY_COINCIDENCES;
     break;
 
-  case OUTPUT_FORMAT::BRUKER_LM:
+  case static_cast<int>(OutputFormat::BRUKER_LM):
   default:
     printf("Using Bruker LM format\n");
-    cfg.outputFormat = OUTPUT_FORMAT::BRUKER_LM;
+    cfg.outputFormat = OutputFormat::BRUKER_LM;
     break;
   }
 
@@ -118,34 +119,34 @@ SimConfig parseConfig(const std::string &filename) {
   infoS >> auxInt;
   infoS.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
   switch (auxInt) {
-  case COINCIDENCE_METHOD::TAKE_WINNER_IF_ALL_ARE_GOODS:
-    cfg.coinMethod = COINCIDENCE_METHOD::TAKE_WINNER_IF_ALL_ARE_GOODS;
+  case static_cast<int>(CoincidenceMethod::TAKE_WINNER_IF_ALL_ARE_GOODS):
+    cfg.coinMethod = CoincidenceMethod::TAKE_WINNER_IF_ALL_ARE_GOODS;
     break;
-  case COINCIDENCE_METHOD::TAKE_CLOSEST:
-    cfg.coinMethod = COINCIDENCE_METHOD::TAKE_CLOSEST;
+  case static_cast<int>(CoincidenceMethod::TAKE_CLOSEST):
+    cfg.coinMethod = CoincidenceMethod::TAKE_CLOSEST;
     break;
-  case COINCIDENCE_METHOD::TAKE_SAME_HISTORY:
-    cfg.coinMethod = COINCIDENCE_METHOD::TAKE_SAME_HISTORY;
+  case static_cast<int>(CoincidenceMethod::TAKE_SAME_HISTORY):
+    cfg.coinMethod = CoincidenceMethod::TAKE_SAME_HISTORY;
     break;
-  case COINCIDENCE_METHOD::TAKE_SAME_HISTORY_511:
-    cfg.coinMethod = COINCIDENCE_METHOD::TAKE_SAME_HISTORY_511;
+  case static_cast<int>(CoincidenceMethod::TAKE_SAME_HISTORY_511):
+    cfg.coinMethod = CoincidenceMethod::TAKE_SAME_HISTORY_511;
     break;
   default:
-    cfg.coinMethod = COINCIDENCE_METHOD::TAKE_CLOSEST;
+    cfg.coinMethod = CoincidenceMethod::TAKE_CLOSEST;
   }
 
   // Projection method
   infoS >> auxInt;
   infoS.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
   switch (auxInt) {
-  case PROJECTION_METHOD::EXTEND_DETECTOR:
-    cfg.projectionMethod = PROJECTION_METHOD::EXTEND_DETECTOR;
+  case static_cast<int>(ProjectionMethod::EXTEND_DETECTOR):
+    cfg.projectionMethod = ProjectionMethod::EXTEND_DETECTOR;
     break;
-  case PROJECTION_METHOD::FIT_IN_DETECTOR:
-    cfg.projectionMethod = PROJECTION_METHOD::FIT_IN_DETECTOR;
+  case static_cast<int>(ProjectionMethod::FIT_IN_DETECTOR):
+    cfg.projectionMethod = ProjectionMethod::FIT_IN_DETECTOR;
     break;
   default:
-    cfg.projectionMethod = PROJECTION_METHOD::NONE;
+    cfg.projectionMethod = ProjectionMethod::NONE;
   }
 
   // Detector list filename
@@ -169,11 +170,11 @@ SimConfig parseConfig(const std::string &filename) {
   infoS >> auxInt;
   infoS.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
   switch (auxInt) {
-  case GENERATE_HISTOGRAM::LOR_INDEX:
-    cfg.generateHistogram = GENERATE_HISTOGRAM::LOR_INDEX;
+  case static_cast<int>(GenerateHistogram::LOR_INDEX):
+    cfg.generateHistogram = GenerateHistogram::LOR_INDEX;
     break;
   default:
-    cfg.generateHistogram = GENERATE_HISTOGRAM::NONE;
+    cfg.generateHistogram = GenerateHistogram::NONE;
   }
 
   // PenRed Flags
@@ -226,7 +227,7 @@ SimConfig parseConfig(const std::string &filename) {
 
   strcpy(cfg.header.identifier, "Simulation");
   cfg.header.rawCounts = static_cast<double>(cfg.nCounts);
-  cfg.header.activity = activity * 2.7027027027027E-8; // In micro Curie
+  cfg.header.activity = activity * constants::BQ_TO_MICROCURIE;
   cfg.header.startTime = 0.0;
   cfg.header.measurementTime = 0.0;
   cfg.header.weight = 1.0;

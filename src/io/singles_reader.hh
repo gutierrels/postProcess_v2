@@ -16,10 +16,10 @@ public:
                 const SimConfig &cfg);
   ~SinglesReader();
 
-  single seedFirst();
+  SingleEvent seedFirst();
 
   // Fills nextSingles with all events in [t, t + windowEndTime]
-  void fillWindow(std::vector<single> &nextSingles, double endTime,
+  void fillWindow(std::vector<SingleEvent> &nextSingles, double endTime,
                   double timeMargin);
 
   bool allDone() const;
@@ -31,7 +31,7 @@ private:
 
   std::vector<FILE *> fmods;
   std::vector<std::uintmax_t> fileSizes;
-  std::vector<single> noInTimeSingles;
+  std::vector<SingleEvent> noInTimeSingles;
 
   const DetectorGeometry &geo;
   const SimConfig &cfg;

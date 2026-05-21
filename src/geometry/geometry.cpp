@@ -1,5 +1,6 @@
 
 #include "geometry/geometry.hh"
+#include "common/constants.hh"
 #include <cmath>
 #include <cstdio>
 
@@ -98,9 +99,8 @@ DetectorGeometry DetectorGeometry::build(SimConfig &cfg) {
 
   // Rotation matrices per module
   geo.Rz.resize(geo.modPerRing);
-  constexpr double pi = 3.14159265359;
   const double angleStep =
-      2.0 * pi / static_cast<double>(geo.modPerRing);
+      2.0 * constants::PI / static_cast<double>(geo.modPerRing);
   for (unsigned im = 0; im < geo.modPerRing; ++im) {
     double angle = static_cast<double>(im) * angleStep;
     double cangle = cos(angle);

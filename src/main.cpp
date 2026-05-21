@@ -1,5 +1,6 @@
 
 #include "coincidence/coincidence_engine.hh"
+#include "common/constants.hh"
 #include "common/math_utils.hh"
 #include "common/types.hh"
 #include "config/config.hh"
@@ -21,15 +22,15 @@ int main(int argc, char **argv) {
   printf("LM Header size  : %lu\n",
          static_cast<unsigned long>(sizeof(LMHeader)));
   printf("Coincidence size: %lu\n",
-         static_cast<unsigned long>(sizeof(coincidence)));
-  printf("Single size     : %lu\n", static_cast<unsigned long>(sizeof(single)));
+         static_cast<unsigned long>(sizeof(CoincidenceEvent)));
+  printf("Single size     : %lu\n", static_cast<unsigned long>(sizeof(SingleEvent)));
 
   // Setup
   SimConfig cfg = parseConfig(argv[1]);
   cfg.header.print();
 
   DetectorGeometry geo = DetectorGeometry::build(cfg);
-  std::vector<detPair> pairs = readPairList(cfg.pairListFilename);
+  std::vector<DetectorPair> pairs = readPairList(cfg.pairListFilename);
   SinglesReader reader(argv[2], geo, cfg);
   CoincidenceEngine engine(cfg.coinMethod, pairs, geo.modPerRing,
                            cfg.useLogicalDetectors);
@@ -51,7 +52,7 @@ int main(int argc, char **argv) {
   double maxTimestamp = 0.0;
 
   // Main loop
-  std::vector<single> window;
+  std::vector<SingleEvent> window;
   window.push_back(reader.seedFirst());
 
   size_t iterations = 0;
@@ -60,7 +61,7 @@ int main(int argc, char **argv) {
   while (!reader.allDone()) {
     double initTime = window[0].t;
     double endTime = initTime + cfg.coincidenceWindow;
-    double timeMargin = (cfg.tRes > 0.0) ? (5.0 * cfg.tRes / 2.355) : 0.0;
+    double timeMargin = (cfg.tRes > 0.0) ? (5.0 * cfg.tRes / constants::FWHM_TO_SIGMA) : 0.0;
 
     size_t oldSize = window.size();
     reader.fillWindow(window, endTime, timeMargin);
@@ -115,20 +116,20 @@ int main(int argc, char **argv) {
 
     CoincidenceResult result = engine.findCoincidence(window, windowSingles);
 
-    coincidence c;
+    CoincidenceEvent c;
     c.time = window[0].t;
     c.amount = 1.0;
     c.gate_flag = 0;
     bool acceptedCoincidence = false;
 
     if (result.iCoincidence > 0) {
-      // Possible coincidence
+      // Possible CoincidenceEvent
       std::array<double, 3> p1;
       std::array<double, 3> p2;
       std::array<double, 3> lor0;
       std::array<double, 3> lor1;
 
-      if (cfg.projectionMethod == PROJECTION_METHOD::NONE) {
+      if (cfg.projectionMethod == ProjectionMethod::NONE) {
         lor0 = std::array<double, 3>{window[0].x, window[0].y, window[0].z};
         lor1 = std::array<double, 3>{window[result.iCoincidence].x,
                                      window[result.iCoincidence].y,
@@ -164,13 +165,13 @@ int main(int argc, char **argv) {
                     cfg.detectorDepth, geo.ringRad,
                     geo.Rz[window[0].module % geo.modPerRing],
                     geo.Dz[window[0].module / geo.modPerRing],
-                    cfg.projectionMethod == PROJECTION_METHOD::EXTEND_DETECTOR);
+                    cfg.projectionMethod == ProjectionMethod::EXTEND_DETECTOR);
         p2 =
             project(p2Blur, p1Blur, geo.detectorSizeX, geo.detectorSizeY,
                     cfg.detectorDepth, geo.ringRad,
                     geo.Rz[window[result.iCoincidence].module % geo.modPerRing],
                     geo.Dz[window[result.iCoincidence].module / geo.modPerRing],
-                    cfg.projectionMethod == PROJECTION_METHOD::EXTEND_DETECTOR);
+                    cfg.projectionMethod == ProjectionMethod::EXTEND_DETECTOR);
       }
 
       if (p1[0] >= geo.detectorSizeX || p1[0] <= 0.0 ||
@@ -180,11 +181,11 @@ int main(int argc, char **argv) {
           p2[1] >= geo.detectorSizeY || p2[1] <= 0.0 ||
           p2[2] >= cfg.detectorDepth || p2[2] < -1.0e-3) {
 
-        if (cfg.projectionMethod != PROJECTION_METHOD::EXTEND_DETECTOR) {
+        if (cfg.projectionMethod != ProjectionMethod::EXTEND_DETECTOR) {
           char auxBuffer[1000];
           snprintf(
               auxBuffer, 1000,
-              "Warning: Unconsistent coincidence data.\n"
+              "Warning: Inconsistent CoincidenceEvent data.\n"
               " Original P1: %15.5E %15.5E %15.5E %15.5E %15.15E\n"
               " Original P2: %15.5E %15.5E %15.5E %15.5E %15.15E\n"
               "Resulting P1: %15.5E %15.5E %15.5E %15.5E %15.15E\n"
@@ -289,7 +290,7 @@ int main(int argc, char **argv) {
           p[0] > cfg.detectorDepth * 1.01 || p[0] < -1.0e-3) {
         char auxBuffer[1000];
         snprintf(auxBuffer, 1000,
-                 "Warning: Unconsistent single data.\n"
+                 "Warning: Inconsistent SingleEvent data.\n"
                  " Original P: %15.5E %15.5E %15.5E %15.5E %15.15E\n"
                  "Resulting P: %15.5E %15.5E %15.5E %15.5E %15.15E\n"
                  "Ring: %d, Module: %d (%d)\n",
@@ -313,7 +314,7 @@ int main(int argc, char **argv) {
       window.erase(window.begin());
     }
 
-    if (cfg.outputFormat != OUTPUT_FORMAT::BRUKER_LM_ONLY_COINCIDENCES ||
+    if (cfg.outputFormat != OutputFormat::BRUKER_LM_ONLY_COINCIDENCES ||
         acceptedCoincidence) {
       writer->writeCoincidence(c);
     }

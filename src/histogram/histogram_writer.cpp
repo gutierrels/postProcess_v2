@@ -71,7 +71,7 @@ void HistogramSet::writeAll(const std::string &outputDir,
   }
 
   // Write LOR histogram
-  if (cfg.generateHistogram == GENERATE_HISTOGRAM::LOR_INDEX) {
+  if (cfg.generateHistogram == GenerateHistogram::LOR_INDEX) {
     fout = fopen("LOR.hist", "wb");
     if (fout != nullptr) {
       // start timer

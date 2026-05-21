@@ -76,11 +76,11 @@ void SinglesReader::readNext(size_t fileIndex) {
   }
 }
 
-single SinglesReader::seedFirst() {
+SingleEvent SinglesReader::seedFirst() {
   auto firstSingleIt =
       std::min_element(noInTimeSingles.begin(), noInTimeSingles.end());
 
-  single s = *firstSingleIt;
+  SingleEvent s = *firstSingleIt;
 
   unsigned fileIndex = cfg.useLogicalDetectors
                            ? static_cast<unsigned>(std::distance(
@@ -89,13 +89,13 @@ single SinglesReader::seedFirst() {
 
   readNext(fileIndex);
 
-  if (s.t > 1.0e20) {
+  if (s.t >= constants::SENTINEL_TIME) {
     done = true;
   }
   return s;
 }
 
-void SinglesReader::fillWindow(std::vector<single> &nextSingles, double endTime,
+void SinglesReader::fillWindow(std::vector<SingleEvent> &nextSingles, double endTime,
                                double timeMargin) {
   for (size_t i = 0; i < fmods.size(); ++i) {
     while (noInTimeSingles[i].true_t < endTime + timeMargin) {
@@ -108,11 +108,11 @@ void SinglesReader::fillWindow(std::vector<single> &nextSingles, double endTime,
 bool SinglesReader::allDone() const { return done; }
 
 std::string SinglesReader::progressString() const {
-  std::string progressSstring;
+  std::string progressStr;
   for (size_t im = 0; im < fmods.size(); ++im) {
     char prefix[32];
     snprintf(prefix, sizeof(prefix), " Module %4zu", im + 1);
-    progressSstring += stringifyFileProgress(fmods[im], fileSizes[im], prefix);
+    progressStr += stringifyFileProgress(fmods[im], fileSizes[im], prefix);
   }
-  return progressSstring;
+  return progressStr;
 }

@@ -11,7 +11,7 @@ class LMWriter {
 public:
   virtual ~LMWriter() = default;
 
-  virtual void writeCoincidence(const coincidence &c) = 0;
+  virtual void writeCoincidence(const CoincidenceEvent &c) = 0;
 
   virtual void finalize() = 0;
 
@@ -23,7 +23,7 @@ public:
   BrukerLMWriter(const LMHeader &header, bool onlyCoincidences);
   ~BrukerLMWriter() override;
 
-  void writeCoincidence(const coincidence &c) override;
+  void writeCoincidence(const CoincidenceEvent &c) override;
 
   void finalize() override;
 

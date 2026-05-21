@@ -14,7 +14,7 @@ HistogramSet::HistogramSet(const SimConfig &cfg, const DetectorGeometry &geo,
   histMx.resize(geo.totalMods * cfg.nBinsX, 0);
   histMy.resize(geo.totalMods * cfg.nBinsY, 0);
 
-  if (cfg.generateHistogram == GENERATE_HISTOGRAM::LOR_INDEX) {
+  if (cfg.generateHistogram == GenerateHistogram::LOR_INDEX) {
     histLOR.resize(cfg.N * cfg.N * cfg.N * cfg.N * nPairs, 0);
   }
 
@@ -28,10 +28,10 @@ HistogramSet::HistogramSet(const SimConfig &cfg, const DetectorGeometry &geo,
   histMez.resize(nBinsZ * geo.totalMods * nBinsE, 0);
 }
 
-void HistogramSet::accumulateCoincidence(const single &s1, const single &s2,
+void HistogramSet::accumulateCoincidence(const SingleEvent &s1, const SingleEvent &s2,
                                          const std::array<double, 3> &p1,
                                          const std::array<double, 3> &p2,
-                                         const coincidence &c, size_t lorIdx) {
+                                         const CoincidenceEvent &c, size_t lorIdx) {
 
   ++histP[c.pair];
   ++histPx[2 * c.pair * cfg.nBinsX + c.xPosition1];
@@ -39,7 +39,7 @@ void HistogramSet::accumulateCoincidence(const single &s1, const single &s2,
   ++histPy[2 * c.pair * cfg.nBinsY + c.yPosition1];
   ++histPy[2 * c.pair * cfg.nBinsY + cfg.nBinsY + c.yPosition2];
 
-  if (cfg.generateHistogram == GENERATE_HISTOGRAM::LOR_INDEX) {
+  if (cfg.generateHistogram == GenerateHistogram::LOR_INDEX) {
     ++histLOR[lorIdx];
   }
 
@@ -56,9 +56,9 @@ void HistogramSet::accumulateCoincidence(const single &s1, const single &s2,
   if (ebin >= 0 && ebin < static_cast<int>(nBinsE)) {
     ++histMe[s1.module * nBinsE + ebin];
 
-    int zbin = p1[0] / dz;
+    int zbin = static_cast<int>(p1[2] / dz);
     if (zbin >= 0 && zbin < static_cast<int>(nBinsZ)) {
-      ++histMez[zbin * geo.totalMods * nBinsE + s1.module * nBinsE + ebin];
+      ++histMez[s1.module * nBinsE * nBinsZ + ebin * nBinsZ + zbin];
     }
   }
 
@@ -73,7 +73,7 @@ void HistogramSet::accumulateCoincidence(const single &s1, const single &s2,
   }
 }
 
-void HistogramSet::accumulateSingle(const single &s,
+void HistogramSet::accumulateSingle(const SingleEvent &s,
                                     const std::array<double, 3> &p) {
   int ebin = (s.e - cfg.eminkeV) / dekeV;
   if (ebin >= 0 && ebin < static_cast<int>(nBinsE)) {

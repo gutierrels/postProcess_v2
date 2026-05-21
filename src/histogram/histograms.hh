@@ -34,12 +34,12 @@ struct HistogramSet {
   HistogramSet(const SimConfig &cfg, const DetectorGeometry &geo,
                size_t nPairs);
 
-  void accumulateCoincidence(const single &s1, const single &s2,
+  void accumulateCoincidence(const SingleEvent &s1, const SingleEvent &s2,
                              const std::array<double, 3> &p1,
                              const std::array<double, 3> &p2,
-                             const coincidence &c, size_t lorIdx);
+                             const CoincidenceEvent &c, size_t lorIdx);
 
-  void accumulateSingle(const single &s, const std::array<double, 3> &p);
+  void accumulateSingle(const SingleEvent &s, const std::array<double, 3> &p);
 
   void writeAll(const std::string &outputDir, const LMHeader &header) const;
 

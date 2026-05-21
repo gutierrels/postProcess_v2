@@ -6,6 +6,6 @@
 #include <string>
 #include <vector>
 
-std::vector<detPair> readPairList(const std::string &filename);
+std::vector<DetectorPair> readPairList(const std::string &filename);
 
 #endif

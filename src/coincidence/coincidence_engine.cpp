@@ -1,15 +1,16 @@
 
 #include "coincidence/coincidence_engine.hh"
+#include "common/constants.hh"
 #include <cmath>
 
-CoincidenceEngine::CoincidenceEngine(unsigned method,
-                                     const std::vector<detPair> &pairs,
+CoincidenceEngine::CoincidenceEngine(CoincidenceMethod method,
+                                     const std::vector<DetectorPair> &pairs,
                                      unsigned modPerRing, bool logicalMode)
     : coinMethod(method), pairIndexes(pairs), modPerRing(modPerRing),
       useLogicalDetectors(logicalMode) {}
 
 CoincidenceResult
-CoincidenceEngine::findCoincidence(const std::vector<single> &window,
+CoincidenceEngine::findCoincidence(const std::vector<SingleEvent> &window,
                                    size_t windowSize) const {
   CoincidenceResult result = {0, static_cast<unsigned>(pairIndexes.size())};
 
@@ -17,26 +18,22 @@ CoincidenceEngine::findCoincidence(const std::vector<single> &window,
     return result;
   }
 
-  // Get first single history number
+  // Get first SingleEvent history number
   unsigned long long hist = window[0].hist;
 
-  // Find the closest single scored by a related detector
+  // Find the closest SingleEvent scored by a related detector
   double emaxSingle = 0.0;
-  double d511 = 1.0e35;
+  double d511 = constants::SENTINEL_TIME;
 
-  unsigned nextSingDevMod =
-      useLogicalDetectors ? window[0].module
-                          : sim2devModule(modPerRing, window[0].module);
+  unsigned nextSingDevMod = resolveModule(window[0].module);
   unsigned localPair;
 
   switch (coinMethod) {
-  case COINCIDENCE_METHOD::TAKE_WINNER_IF_ALL_ARE_GOODS: {
+  case CoincidenceMethod::TAKE_WINNER_IF_ALL_ARE_GOODS: {
     bool allGood = true;
     for (size_t i = 1; i < windowSize; ++i) {
-      localPair = getPair(
-          pairIndexes, nextSingDevMod,
-          useLogicalDetectors ? window[i].module
-                              : sim2devModule(modPerRing, window[i].module));
+      localPair = getPair(pairIndexes, nextSingDevMod,
+                          resolveModule(window[i].module));
       if (localPair >= pairIndexes.size()) {
         allGood = false;
         break;
@@ -45,10 +42,8 @@ CoincidenceEngine::findCoincidence(const std::vector<single> &window,
 
     if (allGood) {
       for (size_t i = 1; i < windowSize; ++i) {
-        localPair = getPair(
-            pairIndexes, nextSingDevMod,
-            useLogicalDetectors ? window[i].module
-                                : sim2devModule(modPerRing, window[i].module));
+        localPair = getPair(pairIndexes, nextSingDevMod,
+                            resolveModule(window[i].module));
         if (emaxSingle < window[i].e) {
           emaxSingle = window[i].e;
           result.iCoincidence = i;
@@ -58,17 +53,15 @@ CoincidenceEngine::findCoincidence(const std::vector<single> &window,
     }
     break;
   }
-  case COINCIDENCE_METHOD::TAKE_SAME_HISTORY:
+  case CoincidenceMethod::TAKE_SAME_HISTORY:
     for (size_t i = 1; i < windowSize; ++i) {
       // Get pair
-      localPair = getPair(
-          pairIndexes, nextSingDevMod,
-          useLogicalDetectors ? window[i].module
-                              : sim2devModule(modPerRing, window[i].module));
+      localPair = getPair(pairIndexes, nextSingDevMod,
+                          resolveModule(window[i].module));
       if (localPair >= pairIndexes.size())
         continue;
 
-      // Check if can be considered as the next coincidence
+      // Check if can be considered as the next CoincidenceEvent
       if (hist == window[i].hist) {
         result.iCoincidence = i;
         result.iPair = localPair;
@@ -76,17 +69,15 @@ CoincidenceEngine::findCoincidence(const std::vector<single> &window,
       }
     }
     break;
-  case COINCIDENCE_METHOD::TAKE_SAME_HISTORY_511:
+  case CoincidenceMethod::TAKE_SAME_HISTORY_511:
     for (size_t i = 1; i < windowSize; ++i) {
       // Get pair
-      localPair = getPair(
-          pairIndexes, nextSingDevMod,
-          useLogicalDetectors ? window[i].module
-                              : sim2devModule(modPerRing, window[i].module));
+      localPair = getPair(pairIndexes, nextSingDevMod,
+                          resolveModule(window[i].module));
       if (localPair >= pairIndexes.size())
         continue;
 
-      // Check if can be considered as the next coincidence
+      // Check if can be considered as the next CoincidenceEvent
       double locald511 = std::fabs(window[i].e - 511.0);
       if (locald511 < d511 && hist == window[i].hist) {
         d511 = locald511;
@@ -95,14 +86,12 @@ CoincidenceEngine::findCoincidence(const std::vector<single> &window,
       }
     }
     break;
-  case COINCIDENCE_METHOD::TAKE_CLOSEST:
+  case CoincidenceMethod::TAKE_CLOSEST:
   default:
     for (size_t i = 1; i < windowSize; ++i) {
       // Get pair
-      localPair = getPair(
-          pairIndexes, nextSingDevMod,
-          useLogicalDetectors ? window[i].module
-                              : sim2devModule(modPerRing, window[i].module));
+      localPair = getPair(pairIndexes, nextSingDevMod,
+                          resolveModule(window[i].module));
       if (localPair >= pairIndexes.size())
         continue;
 

@@ -25,11 +25,11 @@ struct SimConfig {
   unsigned long long nCounts;
   unsigned long long maxCounts;
 
-  unsigned outputFormat;
-  unsigned projectionMethod;
-  unsigned coinMethod;
+  OutputFormat outputFormat;
+  ProjectionMethod projectionMethod;
+  CoincidenceMethod coinMethod;
 
-  unsigned generateHistogram;
+  GenerateHistogram generateHistogram;
 
   std::string pairListFilename;
 

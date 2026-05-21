@@ -26,7 +26,7 @@ toLocal(const double *p1Orig, const double detSizeX, const double detSizeY,
 
 
 
-void toLogical(single &s, const unsigned modPerRing,
+void toLogical(SingleEvent &s, const unsigned modPerRing,
                const double logicalDetSizeY,
                const std::vector<std::array<double, 9>> &Rz,
                const std::vector<double> &Dz);

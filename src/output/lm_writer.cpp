@@ -5,7 +5,7 @@
 
 std::unique_ptr<LMWriter> LMWriter::create(const SimConfig &cfg) {
   bool onlyCoincidences =
-      (cfg.outputFormat == OUTPUT_FORMAT::BRUKER_LM_ONLY_COINCIDENCES);
+      (cfg.outputFormat == OutputFormat::BRUKER_LM_ONLY_COINCIDENCES);
   return std::make_unique<BrukerLMWriter>(cfg.header, onlyCoincidences);
 }
 
@@ -31,9 +31,9 @@ BrukerLMWriter::~BrukerLMWriter() {
   }
 }
 
-void BrukerLMWriter::writeCoincidence(const coincidence &c) {
-  if (!onlyCoincidences || c.energy2 > 0.0) { // single has energy2 = 0.0
-    fwrite(&c, sizeof(coincidence), 1, fLM);
+void BrukerLMWriter::writeCoincidence(const CoincidenceEvent &c) {
+  if (!onlyCoincidences || c.energy2 > 0.0) { // SingleEvent has energy2 = 0.0
+    fwrite(&c, sizeof(CoincidenceEvent), 1, fLM);
   }
 }
 

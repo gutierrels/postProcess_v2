@@ -24,8 +24,8 @@ std::array<double, 3> project(const double *p1Orig, const double *p2Orig,
   p1[2] -= Dz;
   p2[2] -= Dz;
 
-  // Clamp position to fit detector size (Can fall outside due a previous
-  // applied bluring)
+  // Clamp position to fit detector size (Can fall outside due to previous
+  // applied blurring)
   p1[0] =
       std::clamp(p1[0], ringRad * 1.000001, (ringRad + detDepth) * 0.999999);
   p1[1] = std::clamp(p1[1], -detSizeX05 * 0.999999, detSizeX05 * 0.999999);
@@ -103,7 +103,7 @@ std::array<double, 3> toLocal(const double *p1Orig, const double detSizeX,
   if (p1[0] > (ringRad + detDepth) * 1.001 || p1[0] < ringRad * 0.999 ||
       p1[1] > detSizeX05 * 1.001 || p1[1] < -detSizeX05 * 1.001 ||
       p1[2] > detSizeY * 1.001 || p1[2] < -1.0e-3) {
-    printf("Error: Unconsistent coincidence data.\n");
+    printf("Error: Inconsistent CoincidenceEvent data.\n");
     printf(" Original P1: %15.5E %15.5E %15.5E\n", p1Orig[0], p1Orig[1],
            p1Orig[2]);
     printf("Resulting P1: %15.5E %15.5E %15.5E\n", p1[0], p1[1], p1[2]);
@@ -137,7 +137,7 @@ toLocal(const double *p1Orig, const double detSizeX, const double detSizeY,
   const std::array<double, 3> local =
       toLocal(p1Orig, detSizeX, detSizeY, detDepth, ringRad, Rz, Dz);
 
-  // Apply bluring
+  // Apply blurring
   unsigned count = 0;
   std::array<double, 3> res;
   do {
@@ -151,14 +151,14 @@ toLocal(const double *p1Orig, const double detSizeX, const double detSizeY,
   } while ((res[2] <= 0.0 || res[2] >= detDepth) && count++ < 1000);
 
   if (count >= 1000)
-    printf("Error bluring!\n");
+    printf("Error blurring!\n");
 
   return res;
 }
 
 
 
-void toLogical(single &s, const unsigned modPerRing,
+void toLogical(SingleEvent &s, const unsigned modPerRing,
                const double logicalDetSizeY,
                const std::vector<std::array<double, 9>> &Rz,
                const std::vector<double> &Dz) {

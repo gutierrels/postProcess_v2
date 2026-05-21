@@ -3,8 +3,8 @@
 #include <cstdio>
 #include <cstdlib>
 
-std::vector<detPair> readPairList(const std::string &filename) {
-  std::vector<detPair> pairIndexes;
+std::vector<DetectorPair> readPairList(const std::string &filename) {
+  std::vector<DetectorPair> pairIndexes;
   FILE *fdetPair = fopen(filename.c_str(), "r");
   if (fdetPair == nullptr) {
     printf("Unable to open detector pair list file '%s'\n", filename.c_str());

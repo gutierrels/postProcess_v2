@@ -6,23 +6,28 @@
 #include <vector>
 
 struct CoincidenceResult {
-  unsigned iCoincidence; // 0 = no coincidence
+  unsigned iCoincidence; // 0 = no CoincidenceEvent
   unsigned iPair;
 };
 
 class CoincidenceEngine {
 public:
-  CoincidenceEngine(unsigned method, const std::vector<detPair> &pairs,
-                    unsigned modPerRing, bool logicalMode);
+  CoincidenceEngine(CoincidenceMethod method, const std::vector<DetectorPair> &pairs,
+                    unsigned modPerRing, bool useLogicalDetectors);
 
-  CoincidenceResult findCoincidence(const std::vector<single> &window,
+  CoincidenceResult findCoincidence(const std::vector<SingleEvent> &window,
                                     size_t windowSize) const;
 
 private:
-  unsigned coinMethod;
-  const std::vector<detPair> &pairIndexes;
+  CoincidenceMethod coinMethod;
+  const std::vector<DetectorPair> &pairIndexes;
   unsigned modPerRing;
   bool useLogicalDetectors;
+
+  inline unsigned resolveModule(unsigned rawModule) const {
+    return useLogicalDetectors ? rawModule
+                               : sim2devModule(modPerRing, rawModule);
+  }
 };
 
 #endif
