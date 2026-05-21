@@ -2,6 +2,7 @@
 #include "output/lm_writer.hh"
 #include <cstdio>
 #include <cstdlib>
+#include <stdexcept>
 
 std::unique_ptr<LMWriter> LMWriter::create(const SimConfig &cfg) {
   bool onlyCoincidences =
@@ -17,8 +18,7 @@ BrukerLMWriter::BrukerLMWriter(const LMHeader &header, bool onlyCoincidences)
     : onlyCoincidences(onlyCoincidences) {
   fLM = fopen("data.lm", "wb");
   if (fLM == nullptr) {
-    printf("Unable to create LM file 'data.lm'\n");
-    std::exit(-1);
+    throw std::runtime_error("Unable to create LM file 'data.lm'");
   }
   // Write header
   fwrite(&header, sizeof(LMHeader), 1, fLM);

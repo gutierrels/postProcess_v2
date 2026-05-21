@@ -2,13 +2,13 @@
 #include "io/pair_list.hh"
 #include <cstdio>
 #include <cstdlib>
+#include <stdexcept>
 
 std::vector<DetectorPair> readPairList(const std::string &filename) {
   std::vector<DetectorPair> pairIndexes;
   FILE *fdetPair = fopen(filename.c_str(), "r");
   if (fdetPair == nullptr) {
-    printf("Unable to open detector pair list file '%s'\n", filename.c_str());
-    std::exit(-2);
+    throw std::runtime_error("Unable to open detector pair list file '" + filename + "'");
   }
 
   printf("Reading detector pair list file '%s'\n", filename.c_str());
@@ -19,10 +19,7 @@ std::vector<DetectorPair> readPairList(const std::string &filename) {
     ++iline;
     unsigned a, b;
     if (sscanf(line, "%*u %u %u", &a, &b) != 2) {
-      printf("Corrupted detector pair file '%s'. "
-             "Check line %u: %s\n",
-             filename.c_str(), iline, line);
-      std::exit(-2);
+      throw std::runtime_error("Corrupted detector pair file '" + filename + "'. Check line " + std::to_string(iline) + ": " + std::string(line));
     }
     pairIndexes.emplace_back(a, b);
   }

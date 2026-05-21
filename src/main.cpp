@@ -12,8 +12,11 @@
 #include "output/lm_writer.hh"
 
 
+#include <stdexcept>
+
 int main(int argc, char **argv) {
-  if (argc < 3) {
+  try {
+    if (argc < 3) {
     printf("usage: %s infoFile input_prefix\n", argv[0]);
     return 1;
   }
@@ -347,4 +350,8 @@ int main(int argc, char **argv) {
   hists.writeAll("modules", cfg.header);
 
   return 0;
+  } catch (const std::exception &e) {
+    printf("\nFatal error: %s\n", e.what());
+    return 1;
+  }
 }

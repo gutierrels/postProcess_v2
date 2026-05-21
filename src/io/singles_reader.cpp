@@ -23,8 +23,7 @@ SinglesReader::SinglesReader(const std::string &prefix,
 
     fmods[i] = fopen(dataFilename.c_str(), "rb");
     if (fmods[i] == nullptr) {
-      printf("Missing data file '%s'\n", dataFilename.c_str());
-      std::exit(-2);
+      throw std::runtime_error("Missing data file '" + dataFilename + "'");
     }
   }
 
@@ -34,8 +33,7 @@ SinglesReader::SinglesReader(const std::string &prefix,
                                             cfg.eRes, cfg.tRes, cfg.saveWeight,
                                             cfg.saveMetadata, normDist, gen);
     if (err != 0) {
-      printf("Error: Empty or corrupted module file (%zu)\n", i);
-      std::exit(-3);
+      throw std::runtime_error("Error: Empty or corrupted module file (" + std::to_string(i) + ")");
     }
   }
 
@@ -67,7 +65,7 @@ void SinglesReader::readNext(size_t fileIndex) {
         fclose(fmods[fileIndex]);
         fmods[fileIndex] = nullptr;
       } else {
-        std::exit(-4);
+        throw std::runtime_error("Corrupted singles file for module " + std::to_string(fileIndex));
       }
     } else if (cfg.useLogicalDetectors) {
       toLogical(noInTimeSingles[fileIndex], geo.modPerRing,

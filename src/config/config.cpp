@@ -4,13 +4,13 @@
 #include <cstdio>
 #include <fstream>
 #include <limits>
+#include <stdexcept>
 
 SimConfig parseConfig(const std::string &filename) {
 
   std::ifstream infoS(filename);
   if (!infoS) {
-    printf("Unable to open information file '%s'\n", filename.c_str());
-    std::exit(-2);
+    throw std::runtime_error("Unable to open information file '" + filename + "'");
   }
 
   SimConfig cfg;
@@ -199,8 +199,7 @@ SimConfig parseConfig(const std::string &filename) {
   }
 
   if (!infoS) {
-    printf("Corrupted information file '%s'\n", filename.c_str());
-    std::exit(-2);
+    throw std::runtime_error("Corrupted information file '" + filename + "'");
   }
   infoS.close();
 
@@ -208,9 +207,7 @@ SimConfig parseConfig(const std::string &filename) {
   if (cfg.nBinsNormX == cfg.nBinsNormY) {
     cfg.N = cfg.nBinsNormX;
   } else {
-    printf("Not square detectors: '%u' and '%u' pixels\n", cfg.nBinsNormX,
-           cfg.nBinsNormY);
-    std::exit(-2);
+    throw std::runtime_error("Not square detectors: '" + std::to_string(cfg.nBinsNormX) + "' and '" + std::to_string(cfg.nBinsNormY) + "' pixels");
   }
 
   // Validate logical detector + CASTOR incompatibility
