@@ -4,6 +4,8 @@
 #include <cstdio>
 #include <fstream>
 #include <limits>
+#include <string>
+#include <cstring>
 #include <stdexcept>
 
 SimConfig parseConfig(const std::string &filename) {
@@ -15,192 +17,107 @@ SimConfig parseConfig(const std::string &filename) {
 
   SimConfig cfg;
   cfg.maxCounts = 10000000000000000ULL;
+  cfg.header.version[0] = 7;
+  cfg.header.version[1] = 1;
+  cfg.header.calibrationID = 1;
+  cfg.header.gatePeriod = 0;
+  cfg.header.DOILayer = 1;
+  cfg.header.method = 6;
+  cfg.header.StudyID = 1;
+  strcpy(cfg.header.identifier, "Simulation");
+  cfg.header.startTime = 0.0;
+  cfg.header.measurementTime = 0.0;
+  cfg.header.weight = 1.0;
+  cfg.header.maxTemp = 26.0;
+  cfg.header.percentLoss = 0.0;
 
-  // Read number of counts
-  infoS >> cfg.nCounts;
-  infoS.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+  std::string line;
+  unsigned lineNum = 0;
+  while (std::getline(infoS, line)) {
+    lineNum++;
+    size_t commentPos = line.find('#');
+    if (commentPos != std::string::npos) {
+      line = line.substr(0, commentPos);
+    }
+    
+    line.erase(0, line.find_first_not_of(" \t\r\n"));
+    line.erase(line.find_last_not_of(" \t\r\n") + 1);
 
-  // Read detector size in X axis (cm)
-  infoS >> cfg.header.detectorSizeX;
-  infoS.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    if (line.empty()) continue;
 
-  // Read detector size in Y axis (cm)
-  infoS >> cfg.header.detectorSizeY;
-  infoS.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    size_t eqPos = line.find('=');
+    if (eqPos == std::string::npos) {
+      throw std::runtime_error("Invalid configuration line " + std::to_string(lineNum) + " (missing '='): " + line);
+    }
 
-  // Read distance between detectors (cm)
-  infoS >> cfg.header.detectorDistance;
-  infoS.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    std::string key = line.substr(0, eqPos);
+    std::string value = line.substr(eqPos + 1);
+    
+    key.erase(0, key.find_first_not_of(" \t"));
+    key.erase(key.find_last_not_of(" \t") + 1);
+    value.erase(0, value.find_first_not_of(" \t"));
+    value.erase(value.find_last_not_of(" \t") + 1);
 
-  // Read number of modules per ring
-  infoS >> cfg.header.moduleNumber;
-  infoS.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-
-  // Read number of rings
-  infoS >> cfg.header.ringNumber;
-  infoS.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-
-  // Read distance between rings (cm)
-  infoS >> cfg.header.ringDistance;
-  infoS.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-
-  // Isotope name
-  infoS >> cfg.header.isotope;
-  infoS.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-
-  // Isotope half life (s)
-  infoS >> cfg.header.isotopeHalfLife;
-  infoS.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-
-  // Energy resolution (%)
-  infoS >> cfg.eRes;
-  infoS.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-  cfg.eRes /= 100.0;
-
-  // Position resolution (cm)
-  infoS >> cfg.pRes;
-  infoS.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-
-  // Time resolution (s)
-  infoS >> cfg.tRes;
-  infoS.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-
-  // Coincidence window (s)
-  infoS >> cfg.coincidenceWindow;
-  infoS.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-
-  // Energy window (%)
-  infoS >> cfg.energyWindow;
-  infoS.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-  cfg.energyWindow /= 100.0;
-
-  // Module reconstruction bins in X axis
-  infoS >> cfg.nBinsX;
-  infoS.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-
-  // Module reconstruction bins in Y axis
-  infoS >> cfg.nBinsY;
-  infoS.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-
-  // Detector pixels in X axis
-  infoS >> cfg.nBinsNormX;
-  infoS.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-
-  // Detector pixels in Y axis
-  infoS >> cfg.nBinsNormY;
-  infoS.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-
-  // Crystal depth in cm
-  infoS >> cfg.detectorDepth;
-  infoS.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-
-  // Acquisition time (s)
-  infoS >> cfg.header.acqTime;
-  infoS.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-
-  // Output format
-  int auxInt;
-  infoS >> auxInt;
-  infoS.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-  switch (auxInt) {
-  case static_cast<int>(OutputFormat::BRUKER_LM_ONLY_COINCIDENCES):
-    printf("Using Bruker LM format with only coincidences\n");
-    cfg.outputFormat = OutputFormat::BRUKER_LM_ONLY_COINCIDENCES;
-    break;
-
-  case static_cast<int>(OutputFormat::BRUKER_LM):
-  default:
-    printf("Using Bruker LM format\n");
-    cfg.outputFormat = OutputFormat::BRUKER_LM;
-    break;
+    if (key == "Counts") cfg.nCounts = std::stoull(value);
+    else if (key == "DetectorSizeX") cfg.header.detectorSizeX = std::stod(value);
+    else if (key == "DetectorSizeY") cfg.header.detectorSizeY = std::stod(value);
+    else if (key == "DistanceBetweenDetectors") cfg.header.detectorDistance = std::stod(value);
+    else if (key == "ModulesPerRing") cfg.header.moduleNumber = std::stoul(value);
+    else if (key == "NumberOfRings") cfg.header.ringNumber = std::stoul(value);
+    else if (key == "DistanceBetweenRings") cfg.header.ringDistance = std::stod(value);
+    else if (key == "IsotopeName") strncpy(cfg.header.isotope, value.c_str(), sizeof(cfg.header.isotope) - 1);
+    else if (key == "IsotopeHalfLife") cfg.header.isotopeHalfLife = std::stod(value);
+    else if (key == "EnergyResolution") cfg.eRes = std::stod(value) / 100.0;
+    else if (key == "PositionResolution") cfg.pRes = std::stod(value);
+    else if (key == "TimeResolution") cfg.tRes = std::stod(value);
+    else if (key == "CoincidenceWindow") cfg.coincidenceWindow = std::stod(value);
+    else if (key == "EnergyWindow") cfg.energyWindow = std::stod(value) / 100.0;
+    else if (key == "ModuleReconstructionBinsX") cfg.nBinsX = std::stoul(value);
+    else if (key == "ModuleReconstructionBinsY") cfg.nBinsY = std::stoul(value);
+    else if (key == "DetectorPixelsX") cfg.nBinsNormX = std::stoul(value);
+    else if (key == "DetectorPixelsY") cfg.nBinsNormY = std::stoul(value);
+    else if (key == "CrystalDepth") cfg.detectorDepth = std::stod(value);
+    else if (key == "AcquisitionTime") cfg.header.acqTime = std::stod(value);
+    else if (key == "OutputFormat") {
+      int auxInt = std::stoi(value);
+      if (auxInt == static_cast<int>(OutputFormat::BRUKER_LM_ONLY_COINCIDENCES)) {
+        printf("Using Bruker LM format with only coincidences\n");
+        cfg.outputFormat = OutputFormat::BRUKER_LM_ONLY_COINCIDENCES;
+      } else {
+        printf("Using Bruker LM format\n");
+        cfg.outputFormat = OutputFormat::BRUKER_LM;
+      }
+    }
+    else if (key == "CoincidenceMethod") {
+      int auxInt = std::stoi(value);
+      if (auxInt == static_cast<int>(CoincidenceMethod::TAKE_WINNER_IF_ALL_ARE_GOODS)) cfg.coinMethod = CoincidenceMethod::TAKE_WINNER_IF_ALL_ARE_GOODS;
+      else if (auxInt == static_cast<int>(CoincidenceMethod::TAKE_CLOSEST)) cfg.coinMethod = CoincidenceMethod::TAKE_CLOSEST;
+      else if (auxInt == static_cast<int>(CoincidenceMethod::TAKE_SAME_HISTORY)) cfg.coinMethod = CoincidenceMethod::TAKE_SAME_HISTORY;
+      else if (auxInt == static_cast<int>(CoincidenceMethod::TAKE_SAME_HISTORY_511)) cfg.coinMethod = CoincidenceMethod::TAKE_SAME_HISTORY_511;
+      else cfg.coinMethod = CoincidenceMethod::TAKE_CLOSEST;
+    }
+    else if (key == "ProjectionMethod") {
+      int auxInt = std::stoi(value);
+      if (auxInt == static_cast<int>(ProjectionMethod::EXTEND_DETECTOR)) cfg.projectionMethod = ProjectionMethod::EXTEND_DETECTOR;
+      else if (auxInt == static_cast<int>(ProjectionMethod::FIT_IN_DETECTOR)) cfg.projectionMethod = ProjectionMethod::FIT_IN_DETECTOR;
+      else cfg.projectionMethod = ProjectionMethod::NONE;
+    }
+    else if (key == "PairListFilename") cfg.pairListFilename = value;
+    else if (key == "UseLogicalDetectors") cfg.useLogicalDetectors = (std::stoi(value) == 1);
+    else if (key == "LogicalRings") cfg.nLogicalRings = std::stoul(value);
+    else if (key == "DiscardMultiples") cfg.discardMultiples = std::stoi(value);
+    else if (key == "GenerateHistogram") {
+      int auxInt = std::stoi(value);
+      if (auxInt == static_cast<int>(GenerateHistogram::LOR_INDEX)) cfg.generateHistogram = GenerateHistogram::LOR_INDEX;
+      else cfg.generateHistogram = GenerateHistogram::NONE;
+    }
+    else if (key == "SaveWeight") cfg.saveWeight = (std::stoi(value) == 1);
+    else if (key == "SaveMetadata") cfg.saveMetadata = (std::stoi(value) == 1);
+    else {
+      printf("Warning: Unknown configuration key '%s'\n", key.c_str());
+    }
   }
 
-  // Coincidences method
-  infoS >> auxInt;
-  infoS.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-  switch (auxInt) {
-  case static_cast<int>(CoincidenceMethod::TAKE_WINNER_IF_ALL_ARE_GOODS):
-    cfg.coinMethod = CoincidenceMethod::TAKE_WINNER_IF_ALL_ARE_GOODS;
-    break;
-  case static_cast<int>(CoincidenceMethod::TAKE_CLOSEST):
-    cfg.coinMethod = CoincidenceMethod::TAKE_CLOSEST;
-    break;
-  case static_cast<int>(CoincidenceMethod::TAKE_SAME_HISTORY):
-    cfg.coinMethod = CoincidenceMethod::TAKE_SAME_HISTORY;
-    break;
-  case static_cast<int>(CoincidenceMethod::TAKE_SAME_HISTORY_511):
-    cfg.coinMethod = CoincidenceMethod::TAKE_SAME_HISTORY_511;
-    break;
-  default:
-    cfg.coinMethod = CoincidenceMethod::TAKE_CLOSEST;
-  }
-
-  // Projection method
-  infoS >> auxInt;
-  infoS.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-  switch (auxInt) {
-  case static_cast<int>(ProjectionMethod::EXTEND_DETECTOR):
-    cfg.projectionMethod = ProjectionMethod::EXTEND_DETECTOR;
-    break;
-  case static_cast<int>(ProjectionMethod::FIT_IN_DETECTOR):
-    cfg.projectionMethod = ProjectionMethod::FIT_IN_DETECTOR;
-    break;
-  default:
-    cfg.projectionMethod = ProjectionMethod::NONE;
-  }
-
-  // Detector list filename
-  infoS >> cfg.pairListFilename;
-  infoS.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-
-  // Use logical detectors
-  infoS >> auxInt;
-  infoS.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-  cfg.useLogicalDetectors = (auxInt == 1);
-
-  // Number of logical rings
-  infoS >> cfg.nLogicalRings;
-  infoS.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-
-  // Discard multiples
-  infoS >> cfg.discardMultiples;
-  infoS.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-
-  // Generate histogram
-  infoS >> auxInt;
-  infoS.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-  switch (auxInt) {
-  case static_cast<int>(GenerateHistogram::LOR_INDEX):
-    cfg.generateHistogram = GenerateHistogram::LOR_INDEX;
-    break;
-  default:
-    cfg.generateHistogram = GenerateHistogram::NONE;
-  }
-
-  // PenRed Flags
-  infoS >> auxInt;
-  infoS.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-  switch (auxInt) {
-  case 1:
-    cfg.saveWeight = true;
-    break;
-  default:
-    cfg.saveWeight = false;
-  }
-
-  infoS >> auxInt;
-  infoS.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-  switch (auxInt) {
-  case 1:
-    cfg.saveMetadata = true;
-    break;
-  default:
-    cfg.saveMetadata = false;
-  }
-
-  if (!infoS) {
-    throw std::runtime_error("Corrupted information file '" + filename + "'");
-  }
   infoS.close();
 
   // Validate square detector pixels
@@ -221,22 +138,9 @@ SimConfig parseConfig(const std::string &filename) {
   double n0 =
       static_cast<double>(cfg.nCounts) / exp(-lambda * cfg.header.acqTime);
   double activity = lambda * n0;
-
-  strcpy(cfg.header.identifier, "Simulation");
+  
   cfg.header.rawCounts = static_cast<double>(cfg.nCounts);
   cfg.header.activity = activity * constants::BQ_TO_MICROCURIE;
-  cfg.header.startTime = 0.0;
-  cfg.header.measurementTime = 0.0;
-  cfg.header.weight = 1.0;
-  cfg.header.maxTemp = 26.0;
-  cfg.header.percentLoss = 0.0;
-  cfg.header.version[0] = 7;
-  cfg.header.version[1] = 1;
-  cfg.header.calibrationID = 1;
-  cfg.header.gatePeriod = 0;
-  cfg.header.DOILayer = 1;
-  cfg.header.method = 6;
-  cfg.header.StudyID = 1;
 
   cfg.emin = 511.0e3 * (1.0 - cfg.energyWindow);
   cfg.emax = 511.0e3 * (1.0 + cfg.energyWindow);

@@ -1,30 +1,32 @@
-100000000000           Counts
-4.80000E+00            Detector size in X axis (cm)
-4.80000E+00            Detector size in Y axis (cm)
-1.17000E+01            Distance between detectors (cm)
-8                      Modules per ring
-3                      Number of rings
-3.00000E-01            Distance between rings (cm)
-FDG                    Isotope name
-6586.26                Isotope half life (s) (F18: 6586.26)
-6.072650872059336e-6      Energy resolution (%)
-0.00002                   Position resolution (cm)
-500.0e-12                 Time resolution (s)
-5.0e-9                 Coincidence window
-50.0                   Energy window (%)
-300                    module reconstruction bins in X axis
-300                    module reconstruction bins in Y axis
-32                     detector pixels in X axis
-32                     detector pixels in Y axis
-1.0                    crystal depth (cm)
-7200                   Acquisition time (s)
-1                      Output format (0-> Bruker LM, 1-> Bruker LM only coincindences)
-2                      Coincidence method (0-> Greater energy, 1-> Closest time, 2-> Same history, 3-> Same history close to 511)
-0                      Projection Method (0-> None, 1-> Fit the detector, 2-> Extend Detector (discards coincidences falling outside))
-../config/detectorList_oldInsert.txt     Detector pair indexes list filename
-0                         Use logical detectors (0-> No, 1-> Yes)
-6                         Number of logical rings (only used if logical detectors enabled)
-0                         Discard multiples (0-> No, 1-> only triples, 2 -> all multiples)
-1                           Generate histogram (0 -> No, 1 -> LOR index)
-1                       Save weight (0 -> No, 1 -> Yes)
-1                       Save metadata (0 -> No, 1 -> Yes) 
+# Configuration automatically converted to Key = Value format
+
+Counts = 100000000000  # Counts
+DetectorSizeX = 4.80000E+00  # Detector size in X axis (cm)
+DetectorSizeY = 4.80000E+00  # Detector size in Y axis (cm)
+DistanceBetweenDetectors = 1.17000E+01  # Distance between detectors (cm)
+ModulesPerRing = 8  # Modules per ring
+NumberOfRings = 3  # Number of rings
+DistanceBetweenRings = 3.00000E-01  # Distance between rings (cm)
+IsotopeName = FDG  # Isotope name
+IsotopeHalfLife = 6586.26  # Isotope half life (s) (F18: 6586.26)
+EnergyResolution = 6.072650872059336e-6  # Energy resolution (%)
+PositionResolution = 0.00002  # Position resolution (cm)
+TimeResolution = 500.0e-12  # Time resolution (s)
+CoincidenceWindow = 5.0e-9  # Coincidence window
+EnergyWindow = 50.0  # Energy window (%)
+ModuleReconstructionBinsX = 300  # module reconstruction bins in X axis
+ModuleReconstructionBinsY = 300  # module reconstruction bins in Y axis
+DetectorPixelsX = 32  # detector pixels in X axis
+DetectorPixelsY = 32  # detector pixels in Y axis
+CrystalDepth = 1.0  # crystal depth (cm)
+AcquisitionTime = 7200  # Acquisition time (s)
+OutputFormat = 1  # Output format (0-> Bruker LM, 1-> Bruker LM only coincindences)
+CoincidenceMethod = 2  # Coincidence method (0-> Greater energy, 1-> Closest time, 2-> Same history, 3-> Same history close to 511)
+ProjectionMethod = 0  # Projection Method (0-> None, 1-> Fit the detector, 2-> Extend Detector (discards coincidences falling outside))
+PairListFilename = ../config/detectorList_oldInsert.txt  # Detector pair indexes list filename
+UseLogicalDetectors = 0  # Use logical detectors (0-> No, 1-> Yes)
+LogicalRings = 6  # Number of logical rings (only used if logical detectors enabled)
+DiscardMultiples = 0  # Discard multiples (0-> No, 1-> only triples, 2 -> all multiples)
+GenerateHistogram = 1  # Generate histogram (0 -> No, 1 -> LOR index)
+SaveWeight = 1  # Save weight (0 -> No, 1 -> Yes)
+SaveMetadata = 1  # Save metadata (0 -> No, 1 -> Yes)
