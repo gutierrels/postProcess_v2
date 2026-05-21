@@ -6,15 +6,15 @@
 
 std::unique_ptr<LMWriter> LMWriter::create(const SimConfig &cfg) {
   bool onlyCoincidences =
-      (cfg.outputFormat == OutputFormat::BRUKER_LM_ONLY_COINCIDENCES);
-  return std::make_unique<BrukerLMWriter>(cfg.header, onlyCoincidences);
+      (cfg.outputFormat == OutputFormat::LM_ONLY_COINCIDENCES);
+  return std::make_unique<LMWriter>(cfg.header, onlyCoincidences);
 }
 
 // ---------------------------------------------------------------------------
-// BrukerLMWriter
+// LMWriter
 // ---------------------------------------------------------------------------
 
-BrukerLMWriter::BrukerLMWriter(const LMHeader &header, bool onlyCoincidences)
+LMWriter::LMWriter(const LMHeader &header, bool onlyCoincidences)
     : onlyCoincidences(onlyCoincidences) {
   fLM = fopen("data.lm", "wb");
   if (fLM == nullptr) {
@@ -24,22 +24,20 @@ BrukerLMWriter::BrukerLMWriter(const LMHeader &header, bool onlyCoincidences)
   fwrite(&header, sizeof(LMHeader), 1, fLM);
 }
 
-BrukerLMWriter::~BrukerLMWriter() {
+LMWriter::~LMWriter() {
   if (fLM != nullptr) {
     fclose(fLM);
     fLM = nullptr;
   }
 }
 
-void BrukerLMWriter::writeCoincidence(const CoincidenceEvent &c) {
+void LMWriter::writeCoincidence(const CoincidenceEvent &c) {
   if (!onlyCoincidences || c.energy2 > 0.0) { // SingleEvent has energy2 = 0.0
     fwrite(&c, sizeof(CoincidenceEvent), 1, fLM);
   }
 }
 
-
-
-void BrukerLMWriter::finalize() {
+void LMWriter::finalize() {
   if (fLM != nullptr) {
     fclose(fLM);
     fLM = nullptr;

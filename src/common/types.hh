@@ -26,8 +26,8 @@ enum class CoincidenceMethod : unsigned {
 };
 
 enum class OutputFormat : unsigned {
-  BRUKER_LM = 0,
-  BRUKER_LM_ONLY_COINCIDENCES,
+  LM = 0,
+  LM_ONLY_COINCIDENCES,
 };
 
 enum class ProjectionMethod : unsigned {

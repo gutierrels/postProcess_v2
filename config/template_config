@@ -32,15 +32,15 @@ DetectorPixelsX = 32
 DetectorPixelsY = 32
 
 # --- Post-Processing Options ---
-OutputFormat = 1         # 0 -> Bruker LM, 1 -> Bruker LM only coincidences
+OutputFormat = 1         # 0 -> LM, 1 -> LM only coincidences
 CoincidenceMethod = 2    # 0 -> Greater energy, 1 -> Closest time, 2 -> Same history, 3 -> Same history close to 511
 ProjectionMethod = 0     # 0 -> None, 1 -> Fit detector, 2 -> Extend detector
 PairListFilename = ../config/detectorList_oldInsert.txt
-UseLogicalDetectors = 0
-LogicalRings = 6
+UseLogicalDetectors = 0  # 0 -> No, 1 -> Yes
+LogicalRings = 6         # Number of logical rings
 DiscardMultiples = 0     # 0 -> No, 1 -> only triples, 2 -> all multiples
 
 # --- Output Flags ---
-GenerateHistogram = 1
-SaveWeight = 1
-SaveMetadata = 1
+GenerateHistogram = 1    # 0 -> No, 1 -> Yes
+SaveWeight = 1           # 0 -> No, 1 -> Yes (PenRed save weight)
+SaveMetadata = 1         # 0 -> No, 1 -> Yes (PenRed save metadata)

@@ -80,12 +80,12 @@ SimConfig parseConfig(const std::string &filename) {
     else if (key == "AcquisitionTime") cfg.header.acqTime = std::stod(value);
     else if (key == "OutputFormat") {
       int auxInt = std::stoi(value);
-      if (auxInt == static_cast<int>(OutputFormat::BRUKER_LM_ONLY_COINCIDENCES)) {
-        printf("Using Bruker LM format with only coincidences\n");
-        cfg.outputFormat = OutputFormat::BRUKER_LM_ONLY_COINCIDENCES;
+      if (auxInt == static_cast<int>(OutputFormat::LM_ONLY_COINCIDENCES)) {
+        printf("Using LM format with only coincidences\n");
+        cfg.outputFormat = OutputFormat::LM_ONLY_COINCIDENCES;
       } else {
-        printf("Using Bruker LM format\n");
-        cfg.outputFormat = OutputFormat::BRUKER_LM;
+        printf("Using LM format\n");
+        cfg.outputFormat = OutputFormat::LM;
       }
     }
     else if (key == "CoincidenceMethod") {

@@ -9,23 +9,14 @@
 
 class LMWriter {
 public:
-  virtual ~LMWriter() = default;
+  LMWriter(const LMHeader &header, bool onlyCoincidences);
+  ~LMWriter();
 
-  virtual void writeCoincidence(const CoincidenceEvent &c) = 0;
+  void writeCoincidence(const CoincidenceEvent &c);
 
-  virtual void finalize() = 0;
+  void finalize();
 
   static std::unique_ptr<LMWriter> create(const SimConfig &cfg);
-};
-
-class BrukerLMWriter : public LMWriter {
-public:
-  BrukerLMWriter(const LMHeader &header, bool onlyCoincidences);
-  ~BrukerLMWriter() override;
-
-  void writeCoincidence(const CoincidenceEvent &c) override;
-
-  void finalize() override;
 
 private:
   FILE *fLM;

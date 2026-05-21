@@ -316,7 +316,7 @@ int main(int argc, char **argv) {
       window.erase(window.begin());
     }
 
-    if (cfg.outputFormat != OutputFormat::BRUKER_LM_ONLY_COINCIDENCES ||
+    if (cfg.outputFormat != OutputFormat::LM_ONLY_COINCIDENCES ||
         acceptedCoincidence) {
       writer->writeCoincidence(c);
     }
