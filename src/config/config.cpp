@@ -103,6 +103,10 @@ SimConfig parseConfig(const std::string &filename) {
       cfg.detectorDepth = std::stod(value);
     else if (key == "AcquisitionTime")
       cfg.header.acqTime = std::stod(value);
+    else if (key == "PromptGammaMin")
+      cfg.promptGammaMin = std::stod(value);
+    else if (key == "PromptGammaMax")
+      cfg.promptGammaMax = std::stod(value);
     else if (key == "OutputFormat") {
       int auxInt = std::stoi(value);
       if (auxInt == static_cast<int>(OutputFormat::LM_ONLY_COINCIDENCES)) {
@@ -124,8 +128,13 @@ SimConfig parseConfig(const std::string &filename) {
       else if (auxInt ==
                static_cast<int>(CoincidenceMethod::TAKE_SAME_HISTORY_511))
         cfg.coinMethod = CoincidenceMethod::TAKE_SAME_HISTORY_511;
-      else
-        cfg.coinMethod = CoincidenceMethod::TAKE_CLOSEST;
+      else if (auxInt == static_cast<int>(CoincidenceMethod::MULTIPLEXING))
+        cfg.coinMethod = CoincidenceMethod::MULTIPLEXING;
+      else {
+        fprintf(stderr, "Error: Coincidence method %d is not defined.\n",
+                auxInt);
+        throw std::runtime_error("Coincidence method not defined: " + value);
+      }
     } else if (key == "ProjectionMethod") {
       int auxInt = std::stoi(value);
       if (auxInt == static_cast<int>(ProjectionMethod::EXTEND_DETECTOR))
@@ -183,9 +192,10 @@ SimConfig parseConfig(const std::string &filename) {
   cfg.header.rawCounts = static_cast<double>(cfg.nCounts);
   cfg.header.activity = activity * constants::BQ_TO_MICROCURIE;
 
-  cfg.emin = 511.0e3 * (1.0 - cfg.energyWindow);
-  cfg.emax = 511.0e3 * (1.0 + cfg.energyWindow);
+  cfg.emin = 511.0e3 * (1.0 - cfg.energyWindow); // eV
+  cfg.emax = 511.0e3 * (1.0 + cfg.energyWindow); // eV
   cfg.eminkeV = cfg.emin / 1.0e3;
+  cfg.emaxKev = cfg.emax / 1.0e3;
 
   return cfg;
 }

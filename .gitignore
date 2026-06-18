@@ -7,3 +7,4 @@ config/info*
 *.hist
 build/
 .cache/
+.vscode/

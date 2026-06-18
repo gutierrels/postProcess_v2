@@ -38,9 +38,13 @@ struct SimConfig {
   unsigned discardMultiples;
 
   // Energy window (eV)
-  double emin;
-  double emax;
-  double eminkeV;
+  double emin;    // eV
+  double emax;    // eV
+  double eminkeV; // KeV
+  double emaxKev;
+
+  double promptGammaMin; // KeV
+  double promptGammaMax; // KeV
 
   // PenRed Save Flags
   bool saveWeight;

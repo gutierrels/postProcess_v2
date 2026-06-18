@@ -23,6 +23,7 @@ enum class CoincidenceMethod : unsigned {
   TAKE_CLOSEST,
   TAKE_SAME_HISTORY,
   TAKE_SAME_HISTORY_511,
+  MULTIPLEXING,
 };
 
 enum class OutputFormat : unsigned {
@@ -72,7 +73,8 @@ struct SingleEvent {
   unsigned long long hist;
   unsigned module;
 
-  SingleEvent() : t(constants::SENTINEL_TIME), true_t(constants::SENTINEL_TIME) {}
+  SingleEvent()
+      : t(constants::SENTINEL_TIME), true_t(constants::SENTINEL_TIME) {}
 
   inline int readRawSingle(FILE *f, bool saveWeight, bool saveMetadata) {
     char buffer[bufferSize];
@@ -207,7 +209,8 @@ struct CoincidenceEvent {
   }
 
   static inline bool read(CoincidenceEvent &c, FILE *fin) {
-    return fread(&c, sizeof(CoincidenceEvent), 1, fin) == sizeof(CoincidenceEvent);
+    return fread(&c, sizeof(CoincidenceEvent), 1, fin) ==
+           sizeof(CoincidenceEvent);
   }
 };
 
@@ -276,8 +279,8 @@ struct LMHeader {
            identifier, rawCounts, acqTime, activity, isotope, detectorSizeX,
            detectorSizeY, startTime, measurementTime, moduleNumber, ringNumber,
            ringDistance, detectorDistance, isotopeHalfLife, weight, maxTemp,
-           percentLoss, version[0], version[1], calibrationID, gatePeriod, DOILayer, method,
-           StudyID);
+           percentLoss, version[0], version[1], calibrationID, gatePeriod,
+           DOILayer, method, StudyID);
   }
 };
 #pragma pack(pop)

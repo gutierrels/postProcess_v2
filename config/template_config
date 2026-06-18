@@ -6,24 +6,24 @@
 # --- General Simulation ---
 Counts = 100000000000
 IsotopeName = FDG
-IsotopeHalfLife = 6586.26
-AcquisitionTime = 7200
+IsotopeHalfLife = 6586.26 # seconds
+AcquisitionTime = 1 # seconds
 
 # --- Geometry ---
-DetectorSizeX = 4.80000E+00
-DetectorSizeY = 4.80000E+00
-DistanceBetweenDetectors = 1.17000E+01
+DetectorSizeX = 4.80000E+00 # cm
+DetectorSizeY = 4.80000E+00 # cm
+DistanceBetweenDetectors = 1.17000E+01 # cm
 ModulesPerRing = 8
 NumberOfRings = 3
-DistanceBetweenRings = 3.00000E-01
-CrystalDepth = 1.0
+DistanceBetweenRings = 3.00000E-01 # cm
+CrystalDepth = 1.0 # cm
 
 # --- Resolution & Windows ---
-EnergyResolution = 6.072650872059336e-6
-PositionResolution = 0.00002
-TimeResolution = 500.0e-12
-EnergyWindow = 50.0
-CoincidenceWindow = 5.0e-9
+EnergyResolution = 6.072650872059336e-6 # % (for 511 keV)
+PositionResolution = 0.00002 # mm
+TimeResolution = 500.0e-12 # s
+EnergyWindow = 50.0 # % (for 511 keV)
+CoincidenceWindow = 5.0e-9 # s
 
 # --- Bins & Pixels ---
 ModuleReconstructionBinsX = 300
@@ -33,7 +33,9 @@ DetectorPixelsY = 32
 
 # --- Post-Processing Options ---
 OutputFormat = 1         # 0 -> LM, 1 -> LM only coincidences
-CoincidenceMethod = 2    # 0 -> Greater energy, 1 -> Closest time, 2 -> Same history, 3 -> Same history close to 511
+CoincidenceMethod = 2    # 0 -> Greater energy, 1 -> Closest time, 2 -> Same history, 3 -> Same history close to 511, 4 -> Multiplexing (use prompt gamma)
+PromptGammaMin = 650.0   # KeV
+PromptGammaMax = 2000.0  # KeV
 ProjectionMethod = 0     # 0 -> None, 1 -> Fit detector, 2 -> Extend detector
 PairListFilename = ../config/detectorList_oldInsert.txt
 UseLogicalDetectors = 0  # 0 -> No, 1 -> Yes
@@ -41,6 +43,6 @@ LogicalRings = 6         # Number of logical rings
 DiscardMultiples = 0     # 0 -> No, 1 -> only triples, 2 -> all multiples
 
 # --- Output Flags ---
-GenerateHistogram = 1    # 0 -> No, 1 -> Yes
-SaveWeight = 1           # 0 -> No, 1 -> Yes (PenRed save weight)
-SaveMetadata = 1         # 0 -> No, 1 -> Yes (PenRed save metadata)
+GenerateHistogram = 0    # 0 -> No, 1 -> Yes
+SaveWeight = 0           # 0 -> No, 1 -> Yes (PenRed save weight)
+SaveMetadata = 0         # 0 -> No, 1 -> Yes (PenRed save metadata)

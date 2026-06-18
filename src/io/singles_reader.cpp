@@ -27,13 +27,19 @@ SinglesReader::SinglesReader(const std::string &prefix,
     }
   }
 
+  const double readingUpperLimit =
+      (cfg.coinMethod == CoincidenceMethod::MULTIPLEXING)
+          ? (cfg.promptGammaMax * constants::EV_PER_KEV)
+          : cfg.emax;
+
   noInTimeSingles.resize(fmods.size());
   for (size_t i = 0; i < fmods.size(); ++i) {
-    int err = noInTimeSingles[i].readPenRed(fmods[i], i, cfg.emin, cfg.emax,
-                                            cfg.eRes, cfg.tRes, cfg.saveWeight,
-                                            cfg.saveMetadata, normDist, gen);
+    int err = noInTimeSingles[i].readPenRed(
+        fmods[i], i, cfg.emin, readingUpperLimit, cfg.eRes, cfg.tRes,
+        cfg.saveWeight, cfg.saveMetadata, normDist, gen);
     if (err != 0) {
-      throw std::runtime_error("Error: Empty or corrupted module file (" + std::to_string(i) + ")");
+      throw std::runtime_error("Error: Empty or corrupted module file (" +
+                               std::to_string(i) + ")");
     }
   }
 
@@ -55,8 +61,12 @@ SinglesReader::~SinglesReader() {
 
 void SinglesReader::readNext(size_t fileIndex) {
   if (fmods[fileIndex] != nullptr) {
+    const double readingUpperLimit =
+        (cfg.coinMethod == CoincidenceMethod::MULTIPLEXING)
+            ? (cfg.promptGammaMax * constants::EV_PER_KEV)
+            : cfg.emax;
     int errRead = noInTimeSingles[fileIndex].readPenRed(
-        fmods[fileIndex], fileIndex, cfg.emin, cfg.emax, cfg.eRes, cfg.tRes,
+        fmods[fileIndex], fileIndex, cfg.emin, readingUpperLimit, cfg.eRes, cfg.tRes,
         cfg.saveWeight, cfg.saveMetadata, normDist, gen);
 
     if (errRead != 0) {
@@ -65,7 +75,8 @@ void SinglesReader::readNext(size_t fileIndex) {
         fclose(fmods[fileIndex]);
         fmods[fileIndex] = nullptr;
       } else {
-        throw std::runtime_error("Corrupted singles file for module " + std::to_string(fileIndex));
+        throw std::runtime_error("Corrupted singles file for module " +
+                                 std::to_string(fileIndex));
       }
     } else if (cfg.useLogicalDetectors) {
       toLogical(noInTimeSingles[fileIndex], geo.modPerRing,
@@ -93,8 +104,8 @@ SingleEvent SinglesReader::seedFirst() {
   return s;
 }
 
-void SinglesReader::fillWindow(std::vector<SingleEvent> &nextSingles, double endTime,
-                               double timeMargin) {
+void SinglesReader::fillWindow(std::vector<SingleEvent> &nextSingles,
+                               double endTime, double timeMargin) {
   for (size_t i = 0; i < fmods.size(); ++i) {
     while (noInTimeSingles[i].true_t < endTime + timeMargin) {
       nextSingles.push_back(noInTimeSingles[i]);

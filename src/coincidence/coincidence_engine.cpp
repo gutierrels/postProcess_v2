@@ -1,18 +1,25 @@
 
 #include "coincidence/coincidence_engine.hh"
 #include "common/constants.hh"
+#include "common/types.hh"
 #include <cmath>
 
 CoincidenceEngine::CoincidenceEngine(CoincidenceMethod method,
                                      const std::vector<DetectorPair> *pairs,
-                                     unsigned modPerRing, bool logicalMode)
+                                     unsigned modPerRing, bool logicalMode,
+                                     double emin511KeV, double emax511KeV,
+                                     double promptGammaMin,
+                                     double promptGammaMax)
     : coinMethod(method), pairIndexes(pairs), modPerRing(modPerRing),
-      useLogicalDetectors(logicalMode) {}
+      useLogicalDetectors(logicalMode), emin511KeV(emin511KeV),
+      emax511KeV(emax511KeV), promptGammaMin(promptGammaMin),
+      promptGammaMax(promptGammaMax) {}
 
 CoincidenceResult
 CoincidenceEngine::findCoincidence(const std::vector<SingleEvent> &window,
                                    size_t windowSize) const {
-  CoincidenceResult result = {0, static_cast<unsigned>(pairIndexes->size())};
+  CoincidenceResult result = {0, static_cast<unsigned>(pairIndexes->size()),
+                              false};
 
   if (windowSize <= 1) {
     return result;
@@ -86,6 +93,40 @@ CoincidenceEngine::findCoincidence(const std::vector<SingleEvent> &window,
       }
     }
     break;
+
+  case CoincidenceMethod::MULTIPLEXING:
+    // window[0] is guaranteed to be a 511 keV photon (swap applied upstream),
+    // but we double-check here to guard against any edge case.
+    if (window[0].e >= emin511KeV && window[0].e <= emax511KeV) {
+      for (size_t i = 1; i < windowSize; ++i) {
+        // Only consider candidates that are also within the 511 keV window.
+        // This prevents a prompt gamma from forming a false coincidence pair.
+        if (window[i].e < emin511KeV || window[i].e > emax511KeV)
+          continue;
+
+        localPair = getPair(*pairIndexes, nextSingDevMod,
+                            resolveModule(window[i].module));
+        if (localPair >= pairIndexes->size())
+          continue;
+
+        // Found a valid 511-511 pair (closest in time)
+        result.iCoincidence = i;
+        result.iPair = localPair;
+
+        // Scan remaining events for a prompt gamma
+        for (size_t k = 0; k < windowSize; ++k) {
+          if (k == 0 || k == i)
+            continue;
+          if (window[k].e >= promptGammaMin && window[k].e <= promptGammaMax) {
+            result.isTriple = true;
+            break;
+          }
+        }
+        break;
+      }
+    }
+    break;
+
   case CoincidenceMethod::TAKE_CLOSEST:
   default:
     for (size_t i = 1; i < windowSize; ++i) {
